@@ -1,14 +1,37 @@
+import fs from 'fs';
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
 import qrcode from 'qrcode-terminal';
+
+// Auto-detect system Google Chrome / Chromium on Linux VM to save disk space
+const systemChromePath = [
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chromium'
+].find(p => fs.existsSync(p));
+
+const puppeteerConfig = {
+    headless: true,
+    args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--disable-gpu'
+    ]
+};
+if (systemChromePath) {
+    console.log('Using system Chrome at:', systemChromePath);
+    puppeteerConfig.executablePath = systemChromePath;
+}
 
 // Initialize the WhatsApp Client
 // We use LocalAuth so it remembers your session across restarts
 const client = new Client({
     authStrategy: new LocalAuth(),
-    puppeteer: {
-        args: ['--no-sandbox']
-    }
+    puppeteer: puppeteerConfig
 });
 
 let isClientReady = false;
@@ -22,9 +45,32 @@ client.on('qr', (qr) => {
 });
 
 // When successfully authenticated
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log('✅ WhatsApp Web Client is Ready!');
     isClientReady = true;
+
+    // Apply WhatsApp Web LID migration bypass
+    try {
+        await client.pupPage.evaluate(() => {
+            try {
+                if (window.injectToFunction) {
+                    window.injectToFunction(
+                        { module: 'WAWebLid1X1MigrationGating', function: 'Lid1X1MigrationUtils.isLidMigrated' },
+                        () => false
+                    );
+                }
+            } catch (_) {}
+            try {
+                const gating = window.require('WAWebLid1X1MigrationGating');
+                if (gating?.Lid1X1MigrationUtils) {
+                    gating.Lid1X1MigrationUtils.isLidMigrated = () => false;
+                }
+            } catch (_) {}
+        });
+        console.log('✅ WhatsApp LID migration bypass applied');
+    } catch (e) {
+        console.warn('LID bypass warning (non-fatal):', e.message);
+    }
 });
 
 // Handle authentication failures
@@ -44,34 +90,6 @@ export const initWhatsApp = () => {
     }
 };
 
-// Function to send OTP via WhatsApp
-export const sendWhatsAppOTP = async (phoneNumber, otpCode) => {
-    if (!isClientReady) {
-        console.error('WhatsApp is not ready yet! Cannot send OTP.');
-        throw new Error('WhatsApp not ready');
-    }
-
-    try {
-        // Format number: remove + and spaces
-        let cleanNumber = phoneNumber.replace(/\D/g, '');
-
-        // Auto-add Indian country code if user only entered 10 digits
-        if (cleanNumber.length === 10) {
-            cleanNumber = '91' + cleanNumber;
-        }
-
-        const chatId = `${cleanNumber}@c.us`;
-
-        const message = `🥛 *Milkman Dairy*\n\nYour Login OTP is: *${otpCode}*\nDo not share this code with anyone.`;
-
-        await client.sendMessage(chatId, message);
-        console.log(`✅ WhatsApp OTP sent to ${phoneNumber}`);
-    } catch (error) {
-        console.error('❌ Failed to send WhatsApp OTP:', error);
-        throw error;
-    }
-};
-
 export const OWNER_PHONE = "7696880795";
 export const OWNER_CHAT_ID = "917696880795@c.us";
 
@@ -84,48 +102,77 @@ export const formatToChatId = (phoneNumber) => {
     return `${cleanNumber}@c.us`;
 };
 
-export const sendWhatsAppMessage = async (chatId, message) => {
+// Robust helper to send messages avoiding "No LID" bug on WhatsApp Web
+async function sendRobustMessage(chatId, messageText) {
     if (!isClientReady) {
         console.warn('⚠️ WhatsApp client not ready yet. Skipping message send.');
         return false;
     }
+
     try {
-        await client.sendMessage(chatId, message);
+        // Apply bypass before send
+        await client.pupPage.evaluate(() => {
+            try {
+                if (window.injectToFunction) {
+                    window.injectToFunction(
+                        { module: 'WAWebLid1X1MigrationGating', function: 'Lid1X1MigrationUtils.isLidMigrated' },
+                        () => false
+                    );
+                }
+            } catch (_) {}
+            try {
+                const gating = window.require('WAWebLid1X1MigrationGating');
+                if (gating?.Lid1X1MigrationUtils) {
+                    gating.Lid1X1MigrationUtils.isLidMigrated = () => false;
+                }
+            } catch (_) {}
+        }).catch(() => {});
+
+        let targetId = chatId;
+        const cleanNumber = chatId.replace('@c.us', '');
+        try {
+            const numberId = await client.getNumberId(cleanNumber);
+            if (numberId && numberId._serialized) {
+                targetId = numberId._serialized;
+            }
+        } catch (e) {
+            // Keep default targetId
+        }
+
+        try {
+            await client.sendMessage(targetId, messageText);
+        } catch (err) {
+            if (err.message && err.message.includes('No LID')) {
+                console.warn('Handling No LID error via direct WWebJS evaluation...');
+                await client.pupPage.evaluate(async (tid, text) => {
+                    const wid = window.require('WAWebWidFactory').createWid(tid);
+                    let chat = window.require('WAWebCollections').Chat.get(wid);
+                    if (!chat) {
+                        try {
+                            const findAction = window.require('WAWebFindChatAction');
+                            const res = await findAction.findOrCreateLatestChat(wid);
+                            chat = res?.chat;
+                        } catch (_) {
+                            chat = await window.require('WAWebCollections').Chat.find(wid);
+                        }
+                    }
+                    if (chat) {
+                        await window.WWebJS.sendMessage(chat, text);
+                    } else {
+                        throw new Error('Could not initialize chat for ' + tid);
+                    }
+                }, targetId, messageText);
+            } else {
+                throw err;
+            }
+        }
+
         console.log(`✅ WhatsApp message sent to ${chatId}`);
         return true;
     } catch (error) {
         console.error('❌ Failed to send WhatsApp message to', chatId, error.message);
         return false;
     }
-};
-
-export const sendWhatsAppNotification = async (phoneNumber, message) => {
-    const chatId = formatToChatId(phoneNumber);
-    if (!chatId) return false;
-    return await sendWhatsAppMessage(chatId, message);
-};
-
-export const sendOwnerAlert = async (message) => {
-    console.log(`📢 Dispatching Owner WhatsApp Alert to ${OWNER_PHONE}...`);
-    return await sendWhatsAppMessage(OWNER_CHAT_ID, message);
-};
->>>>>>> Stashed changes
-            } else {
-    throw err;
-}
-        }
-<<<<<<< Updated upstream
-
-console.log(`✅ WhatsApp OTP sent to ${phoneNumber} (${targetId})`);
-=======
-
-        console.log(`✅ WhatsApp message sent to ${chatId}`);
-        return true;
->>>>>>> Stashed changes
-    } catch (error) {
-    console.error('❌ Failed to send WhatsApp message to', chatId, error.message);
-    return false;
-}
 }
 
 // Function to send OTP via WhatsApp
