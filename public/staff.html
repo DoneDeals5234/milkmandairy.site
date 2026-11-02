@@ -442,6 +442,368 @@
             border-color: #6366F1;
             color: #4338CA;
         }
+
+        /* ==============================================
+           MOBILE RESPONSIVENESS & TOUCH ENHANCEMENTS
+           ============================================== */
+        .staff-mobile-header {
+            display: none;
+            width: 100%;
+            height: 60px;
+            background: #ffffff;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 0 16px;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .mobile-header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mobile-logo-img {
+            height: 38px;
+            width: 38px;
+            object-fit: contain;
+        }
+        .mobile-brand-meta {
+            display: flex;
+            flex-direction: column;
+        }
+        .mobile-brand-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #0F172A;
+            line-height: 1.1;
+        }
+        .mobile-staff-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #16A34A;
+        }
+        .mobile-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mobile-menu-toggle-btn {
+            background: #F1F5F9;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1E293B;
+            cursor: pointer;
+        }
+
+        /* Mobile Bottom Navigation */
+        .staff-mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid #E2E8F0;
+            z-index: 9999;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+            padding: 0 4px;
+            box-sizing: border-box;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .bottom-nav-item {
+            flex: 1;
+            height: 100%;
+            background: transparent;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            cursor: pointer;
+            color: #64748B;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            padding: 4px 0;
+        }
+        .bottom-nav-item .b-nav-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        .bottom-nav-item .b-nav-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .bottom-nav-item.active {
+            color: #0066FF;
+        }
+        .bottom-nav-item.active .b-nav-label {
+            color: #0066FF;
+            font-weight: 800;
+        }
+
+        /* Custom Plan mode tabs in modal */
+        .modal-mode-tabs {
+            display: flex;
+            background: #F1F5F9;
+            border-radius: 10px;
+            padding: 4px;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .modal-mode-tab {
+            flex: 1;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #475569;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+        .modal-mode-tab.active {
+            background: #FFFFFF;
+            color: #0066FF;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+
+        /* Custom Plan Builder Section in Modal */
+        .staff-custom-builder-box {
+            background: #F8FAFC;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .staff-milk-toggle-row {
+            display: flex;
+            gap: 10px;
+        }
+        .staff-milk-card {
+            flex: 1;
+            border: 2px solid #CBD5E1;
+            background: #FFFFFF;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .staff-milk-card.active {
+            border-color: #0066FF;
+            background: #EFF6FF;
+        }
+        .staff-milk-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #0F172A;
+        }
+        .staff-milk-rate {
+            font-size: 0.8rem;
+            color: #0066FF;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .staff-qty-pills-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .staff-qty-pill {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            color: #334155;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .staff-qty-pill.active {
+            background: #0066FF;
+            border-color: #0066FF;
+            color: #FFFFFF;
+        }
+
+        /* Summary Preview Box in Modal */
+        .staff-plan-preview-box {
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            border: 1.5px solid #93C5FD;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .preview-left strong {
+            display: block;
+            font-size: 0.98rem;
+            color: #0F172A;
+        }
+        .preview-left span {
+            font-size: 0.82rem;
+            color: #475569;
+        }
+        .preview-right {
+            text-align: right;
+        }
+        .preview-price {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #0066FF;
+        }
+
+        /* Mobile Responsive Breakpoints */
+        @media (max-width: 900px) {
+            body {
+                display: block !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                overflow-x: hidden !important;
+                background: #F8FAFC !important;
+            }
+            #dashboardScreen {
+                display: flex !important;
+                flex-direction: column !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                width: 100% !important;
+            }
+            .staff-mobile-header {
+                display: flex !important;
+            }
+            .staff-mobile-bottom-nav {
+                display: flex !important;
+            }
+            .sidebar {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                bottom: 0 !important;
+                width: 280px !important;
+                z-index: 10000 !important;
+                background: #0F172A !important;
+                color: #FFFFFF !important;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.4) !important;
+                transform: translateX(-100%) !important;
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0) !important;
+            }
+            .content-area {
+                padding: 16px 12px 85px 12px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                overflow-y: visible !important;
+            }
+            .form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            .full-width {
+                grid-column: span 1 !important;
+            }
+            .sub-stats-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 10px !important;
+            }
+            .sub-stat-card {
+                padding: 14px 10px !important;
+            }
+            .sub-stat-num {
+                font-size: 1.5rem !important;
+            }
+            .sub-toolbar {
+                flex-direction: column !important;
+                gap: 12px !important;
+                padding: 14px !important;
+            }
+            .sub-filter-group {
+                flex-direction: column !important;
+                width: 100% !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+            }
+            .sub-filter-group input,
+            .sub-filter-group select {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                min-width: 0 !important;
+            }
+
+            /* Responsive Table Cards on Mobile */
+            #subscribersTable thead {
+                display: none !important;
+            }
+            #subscribersTable, #subscribersTable tbody, #subscribersTable tr, #subscribersTable td {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            #subscribersTable {
+                min-width: 0 !important;
+            }
+            #subscribersTable tr {
+                background: #FFFFFF !important;
+                border: 1px solid #E2E8F0 !important;
+                border-radius: 14px !important;
+                margin-bottom: 12px !important;
+                padding: 14px !important;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important;
+            }
+            #subscribersTable td {
+                padding: 6px 0 !important;
+                border: none !important;
+            }
+            #subscribersTable td:last-child {
+                margin-top: 10px !important;
+                padding-top: 10px !important;
+                border-top: 1px dashed #E2E8F0 !important;
+                text-align: left !important;
+            }
+            #subscribersTable td:last-child div {
+                justify-content: flex-start !important;
+                gap: 8px !important;
+            }
+
+            /* Mobile Modals */
+            .staff-modal-card {
+                width: 95% !important;
+                max-width: 95% !important;
+                padding: 20px 16px !important;
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+                border-radius: 18px !important;
+            }
+            .staff-modal-overlay {
+                align-items: flex-end !important;
+                padding-bottom: 10px !important;
+            }
+        }
     </style>
 </head>
 
@@ -492,6 +854,29 @@
             <div style="flex-grow: 1;"></div>
             <div class="nav-item" id="logoutBtn" style="color: #ff4757;">🚪 Logout</div>
         </div>
+
+        <!-- Mobile Sidebar Backdrop -->
+        <div id="sidebarMobileBackdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:9998;display:none;"></div>
+
+        <!-- Mobile Top Header Bar -->
+        <header class="staff-mobile-header" id="staffMobileHeader">
+            <div class="mobile-header-brand">
+                <img src="assets/logo.png" alt="Milkman" class="mobile-logo-img">
+                <div class="mobile-brand-meta">
+                    <span class="mobile-brand-title">Milkman Staff</span>
+                    <span class="mobile-staff-badge">🟢 Online Dashboard</span>
+                </div>
+            </div>
+            <div class="mobile-header-actions">
+                <button type="button" class="mobile-menu-toggle-btn" id="mobileMenuToggleBtn" aria-label="Toggle Staff Menu">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
 
         <!-- Content Area -->
         <div class="content-area">
@@ -667,12 +1052,30 @@
                             <textarea id="prodDesc" rows="2" placeholder="Product description..."></textarea>
                         </div>
                         <div class="input-group full-width">
-                            <label>Product Image</label>
-                            <input type="file" id="prodImgFile" accept="image/*"
-                                style="padding: 10px; cursor: pointer;">
-                            <small style="color: var(--text-light); margin-top: 5px; display: block;">Or provide an
-                                Image URL below:</small>
-                            <input type="text" id="prodImgUrl" placeholder="https://..." style="margin-top: 5px;">
+                            <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span>📸 Product Images (Multiple Supported)</span>
+                                <span id="imgCountBadge" style="font-size: 0.8rem; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 12px;">0 images</span>
+                            </label>
+
+                            <!-- Select Files -->
+                            <div style="background: rgba(255,255,255,0.03); border: 2px dashed rgba(255,255,255,0.15); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 12px;">
+                                <input type="file" id="prodImgFiles" accept="image/*" multiple style="display: none;">
+                                <button type="button" class="btn-login-outline" onclick="document.getElementById('prodImgFiles').click();" style="padding: 9px 18px; font-size: 0.9rem; cursor: pointer; border-radius: 8px;">
+                                    📁 Select Photos From Device (Multiple)
+                                </button>
+                                <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 6px;">You can select multiple photos at once (JPG, PNG, WebP)</div>
+                            </div>
+
+                            <!-- Or Add by URL -->
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <input type="text" id="prodImgUrlInput" placeholder="Or enter Image URL (e.g. https://...)" style="flex: 1; margin: 0;">
+                                <button type="button" id="addImgUrlBtn" class="btn-primary" style="padding: 0 16px; font-size: 0.9rem; white-space: nowrap;">+ Add URL</button>
+                            </div>
+
+                            <!-- Previews Grid -->
+                            <div id="productImagesPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; margin-top: 6px;">
+                                <!-- Image thumbnails will show here -->
+                            </div>
                         </div>
                     </div>
                     <button id="addProductBtn" class="btn-primary" style="margin-top: 20px;">Save Product</button>
@@ -907,28 +1310,71 @@
             </div>
 
         </div>
+
+        <!-- Mobile Bottom Navigation Bar (Thumb Friendly) -->
+        <nav class="staff-mobile-bottom-nav" id="staffMobileBottomNav">
+            <button type="button" class="bottom-nav-item active" data-target="manageOrders">
+                <span class="b-nav-icon">📦</span>
+                <span class="b-nav-label">Orders</span>
+            </button>
+            <button type="button" class="bottom-nav-item" data-target="manageSubscribers">
+                <span class="b-nav-icon">🥛</span>
+                <span class="b-nav-label">Milk Subs</span>
+            </button>
+            <button type="button" class="bottom-nav-item" data-target="manageUsers">
+                <span class="b-nav-icon">👥</span>
+                <span class="b-nav-label">Users</span>
+            </button>
+            <button type="button" class="bottom-nav-item" data-target="manageAreas">
+                <span class="b-nav-icon">🗺️</span>
+                <span class="b-nav-label">Areas</span>
+            </button>
+            <button type="button" class="bottom-nav-item" data-target="manageProducts">
+                <span class="b-nav-icon">🏷️</span>
+                <span class="b-nav-label">Products</span>
+            </button>
+        </nav>
     </div>
 
-    <!-- MODAL: Add / Register Subscriber -->
+    <!-- MODAL: Assign Custom Subscription -->
     <div id="addSubscriberModal" class="staff-modal-overlay">
-        <div class="staff-modal-card">
+        <div class="staff-modal-card" style="max-width: 640px;">
             <span class="close-staff-modal" id="closeAddSubModalBtn">&times;</span>
-            <h3 style="display: flex; align-items: center; gap: 8px;">
-                <span>🥛</span> Register New Milk Subscriber
+            <h3 style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span>🥛</span> Assign Milk Subscription
             </h3>
-            <p style="color: #64748b; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px;">
-                Add customer to daily route, record their plan, and track delivery status.
+            <p style="color: #64748b; font-size: 0.88rem; margin-top: 0; margin-bottom: 16px;">
+                Enroll an existing registered user or new customer in a customized milk plan.
             </p>
 
             <form id="addSubscriberForm">
-                <div class="staff-form-group">
-                    <label>Customer Full Name *</label>
-                    <input type="text" id="addSubName" placeholder="e.g. Ramesh Kumar" required>
+                <!-- Customer Target Switcher -->
+                <div class="modal-mode-tabs" style="margin-bottom: 14px;">
+                    <button type="button" class="modal-mode-tab active" id="tabCustomerExisting">👥 Pick Registered User</button>
+                    <button type="button" class="modal-mode-tab" id="tabCustomerNew">✍️ New Customer</button>
                 </div>
 
-                <div class="staff-form-group">
-                    <label>Phone Number (WhatsApp) *</label>
-                    <input type="tel" id="addSubPhone" placeholder="e.g. 9876543210" required>
+                <!-- Existing User Dropdown -->
+                <div class="staff-form-group" id="userSelectGroup">
+                    <label>Choose Registered Customer *</label>
+                    <select id="addSubUserSelect">
+                        <option value="">-- Choose from Registered Users --</option>
+                    </select>
+                </div>
+
+                <!-- Hidden / explicit User ID -->
+                <input type="hidden" id="addSubUserId" value="">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;" id="customerFieldsGrid">
+                    <div class="staff-form-group">
+                        <label>Customer Full Name *</label>
+                        <input type="text" id="addSubName" placeholder="e.g. Ramesh Kumar" required>
+                    </div>
+
+                    <div class="staff-form-group">
+                        <label>Phone Number (WhatsApp) *</label>
+                        <input type="tel" id="addSubPhone" placeholder="e.g. 9876543210" required>
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -944,20 +1390,83 @@
                     </div>
                 </div>
 
-                <div class="staff-form-group">
-                    <label>Milk Plan *</label>
-                    <select id="addSubPlan" required>
-                        <option value="plan_cow_half" data-price="849" data-rate="28" data-qty="500ml Cow Milk">Cow Milk
-                            (500ml) — ₹849 / mo (₹28/day)</option>
-                        <option value="plan_buffalo_half" data-price="999" data-rate="33" data-qty="500ml Buffalo Milk">
-                            Buffalo Milk (500ml) — ₹999 / mo (₹33/day)</option>
-                        <option value="plan_cow" data-price="1699" data-rate="56" data-qty="1 Liter Cow Milk" selected>
-                            Cow Milk (1L) — ₹1,699 / mo (₹56/day)</option>
-                        <option value="plan_buffalo" data-price="1999" data-rate="66" data-qty="1 Liter Buffalo Milk">
-                            Buffalo Milk (1L) — ₹1,999 / mo (₹66/day)</option>
-                    </select>
+                <!-- Plan Type Mode: Standard Preset vs Custom Builder -->
+                <div style="margin-top: 10px;">
+                    <div class="modal-mode-tabs">
+                        <button type="button" class="modal-mode-tab active" id="tabPlanCustom">🛠️ Build Custom Plan</button>
+                        <button type="button" class="modal-mode-tab" id="tabPlanPreset">⚡ Pre-set Standard Plans</button>
+                    </div>
+
+                    <!-- CUSTOM PLAN BUILDER VIEW -->
+                    <div id="boxCustomPlan" class="staff-custom-builder-box">
+                        <!-- Milk Type Toggle -->
+                        <div>
+                            <label style="font-weight: 700; font-size: 0.86rem; color: #334155; margin-bottom: 6px; display: block;">Milk Type:</label>
+                            <div class="staff-milk-toggle-row">
+                                <div class="staff-milk-card" id="staffMilkCow">
+                                    <div class="staff-milk-title">🐄 Desi Cow Milk</div>
+                                    <div class="staff-milk-rate">Base: ₹56/L</div>
+                                </div>
+                                <div class="staff-milk-card active" id="staffMilkBuffalo">
+                                    <div class="staff-milk-title">🐃 Buffalo Milk</div>
+                                    <div class="staff-milk-rate">Base: ₹66/L</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Daily Quantity Selection -->
+                        <div>
+                            <label style="font-weight: 700; font-size: 0.86rem; color: #334155; margin-bottom: 6px; display: block;">Daily Quantity (Liters/day):</label>
+                            <div class="staff-qty-pills-row" style="margin-bottom: 8px;">
+                                <button type="button" class="staff-qty-pill" data-qty="0.5">0.5L (500ml)</button>
+                                <button type="button" class="staff-qty-pill" data-qty="1.0">1.0 Liter</button>
+                                <button type="button" class="staff-qty-pill active" data-qty="1.5">1.5 Liters</button>
+                                <button type="button" class="staff-qty-pill" data-qty="2.0">2.0 Liters</button>
+                                <button type="button" class="staff-qty-pill" data-qty="3.0">3.0 Liters</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="number" id="customDailyQtyInput" step="0.5" min="0.5" max="20" value="1.5" style="width: 120px; font-weight: 700; padding: 8px 10px; border: 1.5px solid #CBD5E1; border-radius: 8px;">
+                                <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;">Liters / Day</span>
+                            </div>
+                        </div>
+
+                        <!-- Rate Per Liter & Duration Grid -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="staff-form-group">
+                                <label>Rate / Liter (₹) *</label>
+                                <input type="number" id="customRateInput" value="66" min="1" step="1">
+                            </div>
+                            <div class="staff-form-group">
+                                <label>Duration (Total Days) *</label>
+                                <input type="number" id="customDaysInput" value="30" min="1" max="365">
+                            </div>
+                        </div>
+
+                        <!-- Calculated Total Price with Override -->
+                        <div class="staff-form-group">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <label>Total Subscription Bill (₹) *</label>
+                                <small style="color: #64748B;">Auto-calculated (editable for discount)</small>
+                            </div>
+                            <input type="number" id="customTotalAmountInput" value="2970" min="0" style="font-size: 1.2rem; font-weight: 800; color: #0066FF;">
+                        </div>
+                    </div>
+
+                    <!-- PRE-SET PLANS VIEW -->
+                    <div id="boxPresetPlan" style="display: none;">
+                        <div class="staff-form-group">
+                            <label>Choose Pre-Set Plan *</label>
+                            <select id="addSubPlan">
+                                <option value="plan_cow_half" data-price="849" data-rate="28" data-qty="500ml Cow Milk" data-days="30">Cow Milk (500ml) — ₹849 / mo (₹28/day)</option>
+                                <option value="plan_buffalo_half" data-price="999" data-rate="33" data-qty="500ml Buffalo Milk" data-days="30">Buffalo Milk (500ml) — ₹999 / mo (₹33/day)</option>
+                                <option value="plan_cow" data-price="1699" data-rate="56" data-qty="1 Liter Cow Milk" data-days="30">Cow Milk (1L) — ₹1,699 / mo (₹56/day)</option>
+                                <option value="plan_buffalo" data-price="1999" data-rate="66" data-qty="1 Liter Buffalo Milk" data-days="30" selected>Buffalo Milk (1L) — ₹1,999 / mo (₹66/day)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- Date & Payment Grid -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="staff-form-group">
                         <label>Start Date *</label>
@@ -972,12 +1481,24 @@
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px;">
+                <!-- Summary Preview Box -->
+                <div class="staff-plan-preview-box">
+                    <div class="preview-left">
+                        <strong id="previewSummaryName">Buffalo Milk Plan • 1.5L Daily</strong>
+                        <span id="previewSummarySub">30 Days Deliveries • Starts: Tomorrow</span>
+                    </div>
+                    <div class="preview-right">
+                        <div class="preview-price" id="previewSummaryPrice">₹2,970</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
                     <button type="button" class="btn-login-outline" id="cancelAddSubBtn"
                         style="color: #64748b; border-color: #cbd5e1;">Cancel</button>
                     <button type="submit" class="btn-primary" id="saveSubBtn"
-                        style="background: #00E676; border-color: #00E676; color: #0a2540; font-weight: 700;">
-                        Save &amp; Activate Plan
+                        style="background: #00E676; border-color: #00E676; color: #0a2540; font-weight: 800; padding: 12px 22px;">
+                        Save &amp; Activate Plan 🚀
                     </button>
                 </div>
             </form>
@@ -1102,6 +1623,8 @@
         </div>
     </div>
 
+    <!-- TanStack Query Client for Instant Cache & Zero-Loading Transitions -->
+    <script src="js/query-client.js"></script>
     <script>
         const PIN = "52345234";
         const API_HOST = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
@@ -1188,27 +1711,69 @@
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // Navigation
+        // Navigation & Mobile Drawer
         const navItems = document.querySelectorAll('.nav-item[data-target]');
+        const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-target]');
         const sections = document.querySelectorAll('.section');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarMobileBackdrop = document.getElementById('sidebarMobileBackdrop');
+        const mobileMenuToggleBtn = document.getElementById('mobileMenuToggleBtn');
+
+        function toggleMobileSidebar(show) {
+            if (!sidebar) return;
+            const shouldOpen = show !== undefined ? show : !sidebar.classList.contains('mobile-open');
+            if (shouldOpen) {
+                sidebar.classList.add('mobile-open');
+                if (sidebarMobileBackdrop) sidebarMobileBackdrop.style.display = 'block';
+            } else {
+                sidebar.classList.remove('mobile-open');
+                if (sidebarMobileBackdrop) sidebarMobileBackdrop.style.display = 'none';
+            }
+        }
+
+        if (mobileMenuToggleBtn) {
+            mobileMenuToggleBtn.addEventListener('click', () => toggleMobileSidebar());
+        }
+        if (sidebarMobileBackdrop) {
+            sidebarMobileBackdrop.addEventListener('click', () => toggleMobileSidebar(false));
+        }
+
+        function switchSection(targetId) {
+            if (!targetId) return;
+            navItems.forEach(n => {
+                if (n.getAttribute('data-target') === targetId) n.classList.add('active');
+                else n.classList.remove('active');
+            });
+            bottomNavItems.forEach(b => {
+                if (b.getAttribute('data-target') === targetId) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+            sections.forEach(s => {
+                if (s.id === targetId) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+
+            toggleMobileSidebar(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (targetId === 'manageSubscribers' && typeof loadStaffSubscribers === 'function') {
+                loadStaffSubscribers();
+                populateSubAreas();
+            }
+            if (targetId === 'manageBatches' && typeof loadStaffBatches === 'function') {
+                loadStaffBatches();
+            }
+            if (targetId === 'manageUsers' && typeof loadStaffUsers === 'function') {
+                loadStaffUsers();
+            }
+        }
 
         navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                navItems.forEach(n => n.classList.remove('active'));
-                sections.forEach(s => s.classList.remove('active'));
+            item.addEventListener('click', () => switchSection(item.getAttribute('data-target')));
+        });
 
-                item.classList.add('active');
-                const targetId = item.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
-
-                if (targetId === 'manageSubscribers' && typeof loadStaffSubscribers === 'function') {
-                    loadStaffSubscribers();
-                    populateSubAreas();
-                }
-                if (targetId === 'manageBatches' && typeof loadStaffBatches === 'function') {
-                    loadStaffBatches();
-                }
-            });
+        bottomNavItems.forEach(item => {
+            item.addEventListener('click', () => switchSection(item.getAttribute('data-target')));
         });
 
         // Login logic
@@ -1306,77 +1871,122 @@
             }
         });
 
-        // Product Logic (UI only for now, can be hooked to API later)
+        // --- Multiple Product Images State & Management ---
+        let currentProductImages = [];
+
+        function renderProductImagesPreviews() {
+            const grid = document.getElementById('productImagesPreviewGrid');
+            const badge = document.getElementById('imgCountBadge');
+            if (!grid) return;
+
+            if (badge) {
+                badge.innerText = `${currentProductImages.length} image${currentProductImages.length === 1 ? '' : 's'}`;
+            }
+
+            if (currentProductImages.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; font-size: 0.85rem; color: #94A3B8; text-align: center; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1);">No images added yet. Click "Select Photos" or "+ Add URL" above.</div>';
+                return;
+            }
+
+            grid.innerHTML = currentProductImages.map((imgSrc, idx) => `
+                <div style="position: relative; border-radius: 8px; overflow: hidden; border: 2px solid ${idx === 0 ? '#10B981' : 'rgba(255,255,255,0.15)'}; height: 90px; background: #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;">
+                    ${idx === 0 ? '<span style="position: absolute; top: 4px; left: 4px; background: #10B981; color: #fff; font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Cover</span>' : ''}
+                    <button type="button" onclick="removeProductImage(${idx})" style="position: absolute; top: 4px; right: 4px; background: rgba(239, 68, 68, 0.9); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; font-weight: bold;" title="Remove Photo">✕</button>
+                </div>
+            `).join('');
+        }
+
+        window.removeProductImage = (idx) => {
+            currentProductImages.splice(idx, 1);
+            renderProductImagesPreviews();
+        };
+
+        // File Selection (Multiple)
+        document.getElementById('prodImgFiles')?.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (!files || files.length === 0) return;
+
+            for (const file of files) {
+                await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        currentProductImages.push(ev.target.result);
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            e.target.value = '';
+            renderProductImagesPreviews();
+        });
+
+        // Add URL button
+        document.getElementById('addImgUrlBtn')?.addEventListener('click', () => {
+            const input = document.getElementById('prodImgUrlInput');
+            const val = input.value.trim();
+            if (!val) return;
+            currentProductImages.push(val);
+            input.value = '';
+            renderProductImagesPreviews();
+        });
+
+        // Initial preview render
+        renderProductImagesPreviews();
+
+        // Product Logic
         document.getElementById('addProductBtn').addEventListener('click', async () => {
-            const name = document.getElementById('prodName').value;
-            const price = document.getElementById('prodPrice').value;
-            const unit = document.getElementById('prodUnit').value;
-            const stock = document.getElementById('prodStock').value;
-            const desc = document.getElementById('prodDesc').value;
-            const imgUrl = document.getElementById('prodImgUrl').value;
-            const imgFile = document.getElementById('prodImgFile').files[0];
+            const name = document.getElementById('prodName').value.trim();
+            const price = document.getElementById('prodPrice').value.trim();
+            const unit = document.getElementById('prodUnit').value.trim();
+            const stock = document.getElementById('prodStock').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
 
             if (!name || !price || !unit || !desc) {
                 return await customAlert("Required", "Please fill all product details (Name, Price, Unit, Description)");
             }
 
-            if (!imgUrl && !imgFile) {
-                return await customAlert("Required", "Please either upload an image or provide an image URL");
+            if (currentProductImages.length === 0) {
+                return await customAlert("Required", "Please add at least one product image (upload file or add URL)");
             }
 
-            let finalImage = imgUrl;
+            const btn = document.getElementById('addProductBtn');
+            btn.innerText = 'Saving...';
+            btn.disabled = true;
 
-            // If file is selected, we can convert it to base64 or upload to server
-            if (imgFile) {
-                const reader = new FileReader();
-                reader.onload = async function (e) {
-                    finalImage = e.target.result;
-                    await submitProduct(name, price, unit, desc, finalImage, stock);
-                };
-                reader.readAsDataURL(imgFile);
-                return;
-            }
+            const isEdit = !!window.editingProductId;
+            const url = isEdit ? API_BASE + '/api/products/' + window.editingProductId : API_BASE + '/api/products';
+            const method = isEdit ? 'PUT' : 'POST';
 
-            submitProduct(name, price, unit, desc, finalImage, stock);
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        price: parseInt(price),
+                        quantity: unit,
+                        description: desc,
+                        imageUrl: currentProductImages[0] || '',
+                        images: currentProductImages,
+                        available_stock: parseInt(stock || 100),
+                        password: PIN
+                    })
+                });
+                const data = await res.json();
 
-            async function submitProduct(name, price, unit, desc, imageUrl, availableStock) {
-                const btn = document.getElementById('addProductBtn');
-                btn.innerText = 'Saving...';
-                btn.disabled = true;
-
-                const isEdit = !!window.editingProductId;
-                const url = isEdit ? API_BASE + '/api/products/' + window.editingProductId : API_BASE + '/api/products';
-                const method = isEdit ? 'PUT' : 'POST';
-
-                try {
-                    const res = await fetch(url, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name,
-                            price: parseInt(price),
-                            quantity: unit,
-                            description: desc,
-                            imageUrl,
-                            available_stock: parseInt(availableStock || 100),
-                            password: PIN
-                        })
-                    });
-                    const data = await res.json();
-
-                    if (data.success) {
-                        await customAlert("Success", `Product '${name}' saved successfully to database!`);
-                        clearForm();
-                        loadStaffProducts(); // Auto reload products
-                    } else {
-                        await customAlert("Error", 'Error: ' + data.error);
-                    }
-                } catch (e) {
-                    await customAlert("Error", 'Request failed');
-                } finally {
-                    btn.innerText = 'Save Product';
-                    btn.disabled = false;
+                if (data.success) {
+                    await customAlert("Success", `Product '${name}' saved successfully with ${currentProductImages.length} image(s)!`);
+                    clearForm();
+                    loadStaffProducts(); // Auto reload products
+                } else {
+                    await customAlert("Error", 'Error: ' + data.error);
                 }
+            } catch (e) {
+                await customAlert("Error", 'Request failed');
+            } finally {
+                btn.innerText = isEdit ? 'Update Product' : 'Save Product';
+                btn.disabled = false;
             }
 
             function clearForm() {
@@ -1388,8 +1998,10 @@
                 document.getElementById('prodUnit').value = '';
                 document.getElementById('prodStock').value = '100';
                 document.getElementById('prodDesc').value = '';
-                document.getElementById('prodImgUrl').value = '';
-                document.getElementById('prodImgFile').value = '';
+                const urlInput = document.getElementById('prodImgUrlInput');
+                if (urlInput) urlInput.value = '';
+                currentProductImages = [];
+                renderProductImagesPreviews();
             }
         });
 
@@ -1406,16 +2018,23 @@
                         return;
                     }
                     window.staffProductsList = data.products; // save for editing
-                    list.innerHTML = data.products.map(p => `
+                    list.innerHTML = data.products.map(p => {
+                        const imgCount = (p.images && p.images.length) ? p.images.length : (p.image_url ? 1 : 0);
+                        const coverImg = p.image_url || (p.images && p.images[0]) || p.image_base64 || 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=400';
+                        return `
                         <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px;">
                             <div style="display: flex; gap: 15px; align-items: center;">
-                                <img src="${p.image_url || p.image_base64}" alt="${p.name}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                                <div style="position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                                    <img src="${coverImg}" alt="${p.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    ${imgCount > 1 ? `<span style="position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.75); color: #fff; font-size: 0.65rem; padding: 1px 4px; border-radius: 4px; font-weight: 600;">📷 ${imgCount}</span>` : ''}
+                                </div>
                                 <div>
                                     <h4 style="margin: 0; color: var(--text-light);">${p.name}</h4>
                                     <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--primary-color);">₹${p.price} ${p.quantity}</p>
+                                    <small style="color: #94a3b8; font-size: 0.75rem;">${imgCount} image${imgCount === 1 ? '' : 's'} uploaded</small>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                                 <div style="text-align: right;">
                                     <label style="font-size: 0.8rem; color: #888; display: block;">Stock</label>
                                     <input type="number" id="stock_${p.id}" value="${p.available_stock !== null ? p.available_stock : 100}" style="width: 70px; padding: 5px; text-align: center; border-radius: 5px;">
@@ -1425,7 +2044,8 @@
                                 <button onclick="deleteProduct('${p.id}')" class="btn-login-outline" style="padding: 8px 12px; font-size: 0.9rem; color:#ff4757; border-color:#ff4757;">Delete</button>
                             </div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
                 }
             } catch (e) { list.innerHTML = '<span style="color:red">Failed to load products.</span>'; }
         }
@@ -1443,7 +2063,18 @@
             document.getElementById('prodUnit').value = p.quantity;
             document.getElementById('prodStock').value = p.available_stock !== null ? p.available_stock : 100;
             document.getElementById('prodDesc').value = p.description || '';
-            document.getElementById('prodImgUrl').value = p.image_url || p.image_base64 || '';
+
+            // Load multiple images into state
+            if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+                currentProductImages = [...p.images];
+            } else if (p.image_url) {
+                currentProductImages = [p.image_url];
+            } else if (p.image_base64) {
+                currentProductImages = [p.image_base64];
+            } else {
+                currentProductImages = [];
+            }
+            renderProductImagesPreviews();
 
             // Scroll to the form
             document.getElementById('manageProducts').scrollTo({ top: 0, behavior: 'smooth' });
@@ -1478,57 +2109,95 @@
 
         document.getElementById('refreshProductsBtn').addEventListener('click', loadStaffProducts);
 
-        // --- Orders Management Logic ---
-        async function loadStaffOrders() {
+        // --- Orders Management Logic (TanStack Query Cache + Optimistic Updates) ---
+        function renderStaffOrdersList(orders) {
             const feed = document.getElementById('ordersFeed');
-            feed.innerHTML = 'Loading...';
-            try {
-                const res = await fetch(API_BASE + '/api/orders/pending?password=' + PIN);
-                const data = await res.json();
-                if (data.success) {
-                    if (data.orders.length === 0) {
-                        feed.innerHTML = 'No active orders.';
-                        return;
-                    }
-                    feed.innerHTML = data.orders.map(o => {
-                        const orderDate = o.createdAt ? new Date(o.createdAt > 1e11 ? o.createdAt : o.createdAt * 1000) : new Date();
-                        const timeStr = orderDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                        const dateStr = orderDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+            if (!feed) return;
+            if (orders.length === 0) {
+                feed.innerHTML = '<div style="padding: 20px; color: #94A3B8;">No active orders.</div>';
+                return;
+            }
+            feed.innerHTML = orders.map(o => {
+                const orderDate = o.createdAt ? new Date(o.createdAt > 1e11 ? o.createdAt : o.createdAt * 1000) : new Date();
+                const timeStr = orderDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                const dateStr = orderDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 
-                        return `
-                        <div class="card" style="border-left: 5px solid var(--primary-color);">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1.15rem;">Order #${o.id.slice(-6).toUpperCase()} - <span style="color:var(--primary-color)">${o.status}</span></h3>
-                                    <div style="margin-top: 4px; font-size: 0.88rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 5px;">
-                                        <span>⏰ Order Time:</span>
-                                        <span style="color: #fff;">${timeStr} (${dateStr})</span>
-                                    </div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <strong style="font-size: 1.2rem; color: #00E676;">₹${o.totalAmount}</strong><br>
-                                    <small style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">${o.paymentMode || 'COD'}</small>
-                                </div>
-                            </div>
-                            <p style="margin: 8px 0 4px;"><strong>Customer:</strong> ${o.userName} (${o.phoneNumber || 'No phone'})</p>
-                            <p style="margin: 0 0 6px;"><strong>Address:</strong> ${o.houseNo || ''}${o.houseNo ? ', ' : ''}${o.landmark ? o.landmark + ', ' : ''}${o.deliveryArea || ''}</p>
-                            ${o.latitude ? `<p style="margin: 4px 0;">📍 <a href="https://www.google.com/maps/search/?api=1&query=${o.latitude},${o.longitude}" target="_blank" style="color:#00a8ff; text-decoration:underline; font-weight: 600;">View on Map</a></p>` : ''}
-                            
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                ${o.items.map(i => `<div style="font-weight: 600; color: #e2e8f0;">${i.quantity}x ${i.productName}</div>`).join('')}
-                            </div>
-                            
-                            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                                ${o.status === 'PENDING' ? `<button onclick="updateOrderStatus('${o.id}', 'ACCEPTED', true)" class="btn-primary" style="background:#2ecc71;">Accept Order</button>` : ''}
-                                ${o.status === 'ACCEPTED' ? `<button onclick="updateOrderStatus('${o.id}', 'OUT_FOR_DELIVERY', false)" class="btn-primary">Out for Delivery</button>` : ''}
-                                ${o.status === 'OUT_FOR_DELIVERY' ? `<button onclick="updateOrderStatus('${o.id}', 'DELIVERED', false)" class="btn-primary" style="background:#2ecc71;">Mark Delivered</button>` : ''}
-                                <button onclick="updateOrderStatus('${o.id}', 'CANCELLED', false)" class="btn-login-outline" style="color:#ff4757; border-color:#ff4757;">Reject/Cancel</button>
+                return `
+                <div class="card" id="order-card-${o.id}" style="border-left: 5px solid var(--primary-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.15rem;">Order #${o.id.slice(-6).toUpperCase()} - <span id="order-status-badge-${o.id}" style="color:var(--primary-color)">${o.status}</span></h3>
+                            <div style="margin-top: 4px; font-size: 0.88rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                                <span>⏰ Order Time:</span>
+                                <span style="color: #fff;">${timeStr} (${dateStr})</span>
                             </div>
                         </div>
-                    `;
-                    }).join('');
-                }
-            } catch (e) { feed.innerHTML = 'Error fetching orders.'; }
+                        <div style="text-align: right;">
+                            <strong style="font-size: 1.2rem; color: #00E676;">₹${o.totalAmount}</strong><br>
+                            <small style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">${o.paymentMode || 'COD'}</small>
+                        </div>
+                    </div>
+                    <p style="margin: 8px 0 4px;"><strong>Customer:</strong> ${o.userName} (${o.phoneNumber || 'No phone'})</p>
+                    <p style="margin: 0 0 6px;"><strong>Address:</strong> ${o.houseNo || ''}${o.houseNo ? ', ' : ''}${o.landmark ? o.landmark + ', ' : ''}${o.deliveryArea || ''}</p>
+                    ${o.latitude ? `<p style="margin: 4px 0;">📍 <a href="https://www.google.com/maps/search/?api=1&query=${o.latitude},${o.longitude}" target="_blank" style="color:#00a8ff; text-decoration:underline; font-weight: 600;">View on Map</a></p>` : ''}
+                    
+                    <div style="background: rgba(0,0,0,0.2); padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        ${(o.items || []).map(i => `<div style="font-weight: 600; color: #e2e8f0;">${i.quantity}x ${i.productName}</div>`).join('')}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                        ${o.status === 'PENDING' ? `<button onclick="updateOrderStatus('${o.id}', 'ACCEPTED', true)" class="btn-primary" style="background:#2ecc71;">Accept Order</button>` : ''}
+                        ${o.status === 'ACCEPTED' ? `<button onclick="updateOrderStatus('${o.id}', 'OUT_FOR_DELIVERY', false)" class="btn-primary">Out for Delivery</button>` : ''}
+                        ${o.status === 'OUT_FOR_DELIVERY' ? `<button onclick="updateOrderStatus('${o.id}', 'DELIVERED', false)" class="btn-primary" style="background:#2ecc71;">Mark Delivered</button>` : ''}
+                        ${o.status !== 'CANCELLED' && o.status !== 'DELIVERED' ? `<button onclick="updateOrderStatus('${o.id}', 'CANCELLED', false)" class="btn-login-outline" style="color:#ff4757; border-color:#ff4757;">Reject/Cancel</button>` : ''}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        async function loadStaffOrders(force = false) {
+            const feed = document.getElementById('ordersFeed');
+            if (!feed) return;
+
+            const cached = queryClient.getQueryData('staff_orders');
+            if (cached && !force) {
+                renderStaffOrdersList(cached);
+                queryClient.fetchQuery({
+                    queryKey: 'staff_orders',
+                    queryFn: async () => {
+                        const res = await fetch(API_BASE + '/api/orders/pending?password=' + PIN);
+                        const data = await res.json();
+                        return data.success ? data.orders : [];
+                    },
+                    staleTime: 30000
+                }).then(fresh => {
+                    if (fresh && JSON.stringify(fresh) !== JSON.stringify(cached)) {
+                        renderStaffOrdersList(fresh);
+                    }
+                });
+                return;
+            }
+
+            if (!cached) {
+                feed.innerHTML = '<div style="padding: 20px; color: #94A3B8;">Loading orders...</div>';
+            }
+
+            try {
+                const orders = await queryClient.fetchQuery({
+                    queryKey: 'staff_orders',
+                    queryFn: async () => {
+                        const res = await fetch(API_BASE + '/api/orders/pending?password=' + PIN);
+                        const data = await res.json();
+                        return data.success ? data.orders : [];
+                    },
+                    staleTime: 30000,
+                    force: force
+                });
+                renderStaffOrdersList(orders || []);
+            } catch (e) {
+                feed.innerHTML = '<div style="padding: 20px; color: red;">Error fetching orders.</div>';
+            }
         }
 
         window.updateOrderStatus = async (orderId, status, promptTime) => {
@@ -1542,78 +2211,213 @@
                 if (!confirmStatus) return;
             }
 
+            // Optimistic UI patch
+            const orders = queryClient.getQueryData('staff_orders') || [];
+            const targetOrder = orders.find(o => o.id === orderId);
+            if (targetOrder) {
+                targetOrder.status = status;
+                queryClient.setQueryData('staff_orders', [...orders]);
+                renderStaffOrdersList(orders);
+            }
+
             try {
                 await fetch(API_BASE + '/api/orders/update-status', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: PIN, orderId, status, estimatedDelivery })
                 });
-                loadStaffOrders();
-            } catch (e) { await customAlert("Error", "Failed to update status"); }
+            } catch (e) {
+                await customAlert("Error", "Failed to update status");
+                loadStaffOrders(true);
+            }
         };
 
         // --- Users Management Logic ---
-        async function loadStaffUsers() {
+        let allRegisteredUsers = [];
+
+        function renderStaffUsersList(users) {
             const list = document.getElementById('usersList');
-            list.innerHTML = '<div style="padding: 20px;">Loading...</div>';
-            try {
-                const res = await fetch(API_BASE + '/api/users?password=' + PIN);
-                const data = await res.json();
-                if (data.success) {
-                    if (data.users.length === 0) {
-                        list.innerHTML = '<div style="padding: 20px;">No registered users yet.</div>';
-                        return;
-                    }
-                    list.innerHTML = data.users.map(u => `
-                        <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <div>
-                                <h4 style="margin: 0; color: var(--primary-color);">${u.name || 'Unnamed User'}</h4>
-                                <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #aaa;">📞 ${u.phoneNumber || 'No phone number'}</p>
+            if (!list) return;
+            if (users.length === 0) {
+                list.innerHTML = '<div style="padding: 25px; text-align: center; color: #64748B;">No registered users yet.</div>';
+                return;
+            }
+
+            list.innerHTML = users.map(u => {
+                const cleanPhone = (u.phoneNumber || '').replace(/\D/g, '');
+                const waNumber = cleanPhone.startsWith('91') ? cleanPhone : ('91' + cleanPhone);
+                const isSub = !!u.isSubscribed;
+                const safeName = (u.name || 'Customer').replace(/'/g, "\\'");
+                const safePhone = (u.phoneNumber || '').replace(/'/g, "\\'");
+                const safeArea = (u.deliveryArea || '').replace(/'/g, "\\'");
+                const safeHouse = (u.houseNo || '').replace(/'/g, "\\'");
+
+                return `
+                    <div class="user-item-card" id="user-item-${u.id}" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E2E8F0; background: #fff; flex-wrap: wrap; gap: 12px; transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#fff'">
+                        <div style="flex: 1; min-width: 220px;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <h4 style="margin: 0; color: #0F172A; font-weight: 800; font-size: 1.05rem;">${u.name || 'Unnamed Customer'}</h4>
+                                <span id="user-sub-badge-${u.id}">${isSub ? '<span class="status-pill pill-delivered" style="font-size: 0.72rem; padding: 2px 8px;">🟢 Active Sub</span>' : '<span style="font-size: 0.72rem; color: #94A3B8; background: #F1F5F9; padding: 2px 8px; border-radius: 12px; font-weight: 600;">⚪ No Plan</span>'}</span>
                             </div>
-                            <div style="text-align: right; font-size: 0.8rem; color: #888;">
-                                <p style="margin: 0;">Joined: ${new Date(u.createdAt * 1000).toLocaleDateString()}</p>
-                                ${u.lastLoginAt ? `<p style="margin: 5px 0 0 0; color: #2ecc71;">Active recently</p>` : ''}
+                            <div style="margin: 6px 0 0 0; font-size: 0.9rem; color: #475569; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <a href="tel:${cleanPhone}" style="color: #0066FF; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                                    📞 ${u.phoneNumber || 'No phone'}
+                                </a>
+                                ${cleanPhone ? `
+                                    <a href="https://wa.me/${waNumber}?text=Hello%20${encodeURIComponent(u.name || '')},%20Milkman%20Dairy%20team%20se%20sampark%20kar%20rahe%20hain." 
+                                       target="_blank" style="text-decoration: none; font-size: 1rem;" title="Chat on WhatsApp">💬</a>
+                                ` : ''}
                             </div>
+                            ${u.deliveryArea ? `<div style="font-size: 0.83rem; color: #64748B; margin-top: 4px;">📍 <strong>${u.deliveryArea}</strong>${u.houseNo ? ' • ' + u.houseNo : ''}</div>` : ''}
                         </div>
-                    `).join('');
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" 
+                                    onclick="assignSubToUser('${u.id}', '${safeName}', '${safePhone}', '${safeArea}', '${safeHouse}')"
+                                    class="btn-primary" 
+                                    style="padding: 9px 15px; font-size: 0.84rem; background: linear-gradient(135deg, #0066FF, #0052CC); border: none; color: #fff; font-weight: 700; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25); cursor: pointer;">
+                                <span>⚡</span> Assign Subscription
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadStaffUsers(force = false) {
+            const list = document.getElementById('usersList');
+            if (!list) return;
+
+            const cached = queryClient.getQueryData('staff_users');
+            if (cached && !force) {
+                allRegisteredUsers = cached;
+                renderStaffUsersList(cached);
+                if (typeof populateUserDropdownInModal === 'function') {
+                    populateUserDropdownInModal();
                 }
+                queryClient.fetchQuery({
+                    queryKey: 'staff_users',
+                    queryFn: async () => {
+                        const res = await fetch(API_BASE + '/api/users?password=' + PIN);
+                        const data = await res.json();
+                        return data.success ? data.users : [];
+                    },
+                    staleTime: 60000
+                }).then(fresh => {
+                    if (fresh && JSON.stringify(fresh) !== JSON.stringify(cached)) {
+                        allRegisteredUsers = fresh;
+                        renderStaffUsersList(fresh);
+                        if (typeof populateUserDropdownInModal === 'function') {
+                            populateUserDropdownInModal();
+                        }
+                    }
+                });
+                return;
+            }
+
+            if (!cached) {
+                list.innerHTML = '<div style="padding: 25px; text-align: center; color: #64748B;">Loading users...</div>';
+            }
+
+            try {
+                const users = await queryClient.fetchQuery({
+                    queryKey: 'staff_users',
+                    queryFn: async () => {
+                        const res = await fetch(API_BASE + '/api/users?password=' + PIN);
+                        const data = await res.json();
+                        return data.success ? data.users : [];
+                    },
+                    staleTime: 60000,
+                    force: force
+                });
+                allRegisteredUsers = users || [];
+                if (typeof populateUserDropdownInModal === 'function') {
+                    populateUserDropdownInModal();
+                }
+                renderStaffUsersList(allRegisteredUsers);
             } catch (e) { list.innerHTML = '<div style="padding: 20px; color: red;">Error fetching users.</div>'; }
         }
 
-        document.getElementById('refreshUsersBtn').addEventListener('click', loadStaffUsers);
-        document.getElementById('refreshOrdersBtn').addEventListener('click', loadStaffOrders);
+        document.getElementById('refreshUsersBtn').addEventListener('click', () => loadStaffUsers(true));
+        document.getElementById('refreshOrdersBtn').addEventListener('click', () => loadStaffOrders(true));
 
-        // --- Area Management Logic ---
-        async function loadStaffAreas() {
+        // --- Area Management Logic (TanStack Query Cache + Optimistic Toggle) ---
+        function renderStaffAreasList(areas) {
             const list = document.getElementById('areasList');
-            list.innerHTML = 'Loading...';
+            if (!list) return;
+            if (areas.length === 0) {
+                list.innerHTML = '<div style="padding: 15px; color: #94A3B8;">No service areas configured.</div>';
+                return;
+            }
+            list.innerHTML = areas.map(a => `
+                <div class="card" id="area-card-${a.id}" style="padding: 15px; margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight: 700; color: #0F172A;">${a.name}</span>
+                    <button id="area-btn-${a.id}" onclick="toggleArea('${a.id}', 0)" style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight: 700; font-size: 0.85rem;">Deactivate</button>
+                </div>
+            `).join('');
+        }
+
+        async function loadStaffAreas(force = false) {
+            const list = document.getElementById('areasList');
+            if (!list) return;
+
+            const cached = queryClient.getQueryData('serviceable_areas');
+            if (cached && !force) {
+                renderStaffAreasList(cached);
+                queryClient.fetchQuery({
+                    queryKey: 'serviceable_areas',
+                    queryFn: async () => {
+                        const res = await fetch(API_BASE + '/api/areas');
+                        const data = await res.json();
+                        return data.success ? data.areas : [];
+                    },
+                    staleTime: 60000
+                }).then(fresh => {
+                    if (fresh && JSON.stringify(fresh) !== JSON.stringify(cached)) {
+                        renderStaffAreasList(fresh);
+                    }
+                });
+                return;
+            }
+
+            if (!cached) {
+                list.innerHTML = '<div style="padding: 15px; color: #94A3B8;">Loading areas...</div>';
+            }
+
             try {
-                // Fetch ALL areas, for now our API only returns active. We should create a new API or just rely on backend change if we had one.
-                // Since our generic /api/areas returns only active=1, let's just make it return all by changing the API temporarily or adding a param.
-                // Wait, we need all areas for staff. I'll just fetch them via raw query or modify server.js later.
-                // Let's assume we fetch all from a new custom query or just show the active ones.
-                const res = await fetch(API_BASE + '/api/areas');
-                const data = await res.json();
-                if (data.success) {
-                    list.innerHTML = data.areas.map(a => `
-                        <div class="card" style="padding: 15px; margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
-                            <span>${a.name}</span>
-                            <button onclick="toggleArea('${a.id}', 0)" style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Deactivate</button>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) { }
+                const areas = await queryClient.fetchQuery({
+                    queryKey: 'serviceable_areas',
+                    queryFn: async () => {
+                        const res = await fetch(API_BASE + '/api/areas');
+                        const data = await res.json();
+                        return data.success ? data.areas : [];
+                    },
+                    staleTime: 60000,
+                    force: force
+                });
+                renderStaffAreasList(areas || []);
+            } catch (e) {
+                list.innerHTML = '<div style="padding: 15px; color: red;">Error loading areas</div>';
+            }
         }
 
         window.toggleArea = async (id, isActive) => {
+            const areas = queryClient.getQueryData('serviceable_areas') || [];
+            const target = areas.find(a => a.id === id);
+            if (target) {
+                target.isActive = isActive;
+                queryClient.setQueryData('serviceable_areas', [...areas]);
+                renderStaffAreasList(areas);
+            }
+
             try {
                 await fetch(API_BASE + '/api/areas/manage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: PIN, id, isActive })
                 });
-                loadStaffAreas();
-            } catch (e) { }
+            } catch (e) {
+                loadStaffAreas(true);
+            }
         };
 
         document.getElementById('addAreaBtn').addEventListener('click', async () => {
@@ -1626,7 +2430,8 @@
                     body: JSON.stringify({ password: PIN, name })
                 });
                 document.getElementById('newAreaName').value = '';
-                loadStaffAreas();
+                queryClient.invalidateQueries('serviceable_areas');
+                loadStaffAreas(true);
             } catch (e) { }
         });
 
@@ -1689,32 +2494,108 @@
             }
         }
 
-        // Load Subscribers for chosen date
-        async function loadStaffSubscribers() {
-            const date = subDatePicker.value || todayStr;
-            subscribersListBody.innerHTML = '<tr><td colspan="7" style="padding: 30px; text-align: center; color: var(--text-light);">Loading subscribers...</td></tr>';
+        // Render single subscriber row (granular DOM component)
+        function renderSubscriberRow(sub, selectedDate) {
+            const cleanPhone = (sub.phoneNumber || '').replace(/\D/g, '');
+            const waNumber = cleanPhone.startsWith('91') ? cleanPhone : ('91' + cleanPhone);
+            const st = (sub.dateStatus || 'PENDING').toUpperCase();
 
-            try {
-                const res = await fetch(`${API_BASE}/api/staff/subscribers?password=${PIN}&date=${date}`);
-                const data = await res.json();
-                if (data.success) {
-                    currentSubscribers = data.subscribers || [];
-                    renderSubscribers();
-                } else {
-                    subscribersListBody.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #ff5252;">Failed to load: ${data.error || 'Server error'}</td></tr>`;
-                }
-            } catch (e) {
-                subscribersListBody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #ff5252;">Network error connecting to backend</td></tr>';
+            // Status pill
+            let statusBadge = '';
+            if (st === 'DELIVERED') {
+                statusBadge = '<span class="status-pill pill-delivered">✓ Delivered</span>';
+            } else if (st === 'SKIPPED' || st === 'SKIPPED_BY_USER') {
+                statusBadge = '<span class="status-pill pill-skipped">⏸ Paused / Skipped</span>';
+            } else {
+                statusBadge = '<span class="status-pill pill-pending">⏳ Pending</span>';
             }
+
+            // Payment pill
+            const isPrepaid = sub.paymentStatus === 'PREPAID';
+            const paymentBadge = isPrepaid
+                ? `<span class="status-pill pill-paid">✓ Pre-Paid (₹${sub.totalAmount || 0})</span>`
+                : `<span class="status-pill pill-doorstep">💵 Pay at Doorstep (₹${sub.totalAmount || 0})</span>`;
+
+            // Progress
+            const delivered = sub.deliveredDays || 0;
+            const total = sub.totalDays || 30;
+            const percent = Math.min(100, Math.round((delivered / total) * 100));
+
+            return `
+                <tr id="sub-row-${sub.id}" style="border-bottom: 1px solid #E2E8F0; transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 14px 18px;">
+                        <div style="font-weight: 800; color: #0F172A; font-size: 1.05rem; letter-spacing: -0.2px;">
+                            👤 ${sub.userName || 'Subscriber'}
+                        </div>
+                        <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+                            <a href="tel:${cleanPhone}" style="font-size: 0.88rem; color: #0066FF; font-weight: 700; text-decoration: none;">📞 ${sub.phoneNumber || 'N/A'}</a>
+                            <a href="https://wa.me/${waNumber}?text=Hello%20${encodeURIComponent(sub.userName || '')},%20Milkman%20Dairy%20se%20aapki%20milk%20delivery%20ke%20regarding%20update." 
+                               target="_blank" style="text-decoration: none; font-size: 0.95rem;" title="Chat on WhatsApp">💬</a>
+                        </div>
+                    </td>
+                    <td style="padding: 14px 18px; font-size: 0.92rem;">
+                        <div style="color: #0F172A; font-weight: 700;">📍 ${sub.deliveryArea || 'Unassigned Area'}</div>
+                        ${sub.houseNo ? `<div style="color: #64748B; font-size: 0.82rem; margin-top: 2px;">${sub.houseNo}</div>` : ''}
+                    </td>
+                    <td style="padding: 14px 18px; font-size: 0.92rem;">
+                        <strong style="color: #0066FF; font-size: 0.95rem; font-weight: 700;">${sub.planName || 'Daily Milk'}</strong>
+                        <div style="font-size: 0.82rem; color: #64748B; margin-top: 2px;">
+                            Qty: <b style="color: #0F172A;">${sub.dailyQuantity || '1L'}</b> | Started: ${sub.startDate || 'N/A'}
+                        </div>
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 5px; color: #475569; font-weight: 600;">
+                            <span>${delivered} of ${total} days</span>
+                            <span style="font-weight: 800; color: #0066FF;">${percent}%</span>
+                        </div>
+                        <div style="width: 100%; height: 7px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                            <div style="width: ${percent}%; height: 100%; background: linear-gradient(90deg, #10B981, #00E676); border-radius: 4px;"></div>
+                        </div>
+                        <small style="color: #64748B; font-size: 0.78rem; display: block; margin-top: 4px; font-weight: 600;">
+                            ${sub.remainingDays} days left
+                        </small>
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        ${paymentBadge}
+                    </td>
+                    <td style="padding: 14px 18px;">
+                        ${statusBadge}
+                    </td>
+                    <td style="padding: 14px 18px; text-align: right;">
+                        <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                            ${st !== 'DELIVERED' ? `
+                                <button onclick="promptMarkDelivery('${sub.id}', '${sub.userId}', '${selectedDate}', '${(sub.userName || 'Subscriber').replace(/'/g, "\\'")}', '${sub.dailyQuantity || '1L'}', '${(sub.planName || '').replace(/'/g, "\\'")}')" 
+                                        class="btn-primary" 
+                                        style="padding: 6px 12px; font-size: 0.8rem; background: #00E676; border-color: #00E676; color: #0a2540; font-weight: 700;">
+                                    ✓ Mark Delivered
+                                </button>
+                            ` : `
+                                <button onclick="markDelivery('${sub.id}', '${sub.userId}', '${selectedDate}', 'PENDING')" 
+                                        class="btn-login-outline" 
+                                        style="padding: 5px 10px; font-size: 0.75rem; color: #64748B; border-color: #CBD5E1;">
+                                    ↺ Undo
+                                </button>
+                            `}
+                            ${st !== 'SKIPPED' && st !== 'SKIPPED_BY_USER' ? `
+                                <button onclick="markDelivery('${sub.id}', '${sub.userId}', '${selectedDate}', 'SKIPPED')" 
+                                        class="btn-login-outline" 
+                                        style="padding: 6px 10px; font-size: 0.8rem; color: #D97706; border-color: #F59E0B; background: #FFFBEB;">
+                                    ⏸ Skip
+                                </button>
+                            ` : ''}
+                            <button onclick="openSubHistory('${sub.id}', '${(sub.userName || 'Subscriber').replace(/'/g, "\\'")}', '${(sub.planName || '').replace(/'/g, "\\'")}', '${sub.startDate || ''}', ${sub.totalDays || 30}, '${sub.dailyQuantity || '1L'}')" 
+                                    class="btn-login-outline" 
+                                    style="padding: 6px 10px; font-size: 0.8rem; color: #0066FF; border-color: #93C5FD; background: #EFF6FF;" title="View 30-Day Delivery Calendar">
+                                📋 History
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
         }
 
-        // Filter and Render Subscribers
-        function renderSubscribers() {
-            const planFilter = subPlanFilter.value;
-            const searchVal = subSearchInput.value.trim().toLowerCase();
-            const selectedDate = subDatePicker.value || todayStr;
-
-            // Stats calculation across all active subscribers
+        // Granular stats calculator
+        function updateSubscriberStats() {
             let totalCount = currentSubscribers.length;
             let deliveredCount = 0;
             let skippedCount = 0;
@@ -1727,10 +2608,125 @@
                 else pendingCount++;
             });
 
-            statTotalSubs.innerText = totalCount;
-            statDeliveredToday.innerText = deliveredCount;
-            statSkippedToday.innerText = skippedCount;
-            statPendingToday.innerText = pendingCount;
+            if (statTotalSubs) statTotalSubs.innerText = totalCount;
+            if (statDeliveredToday) statDeliveredToday.innerText = deliveredCount;
+            if (statSkippedToday) statSkippedToday.innerText = skippedCount;
+            if (statPendingToday) statPendingToday.innerText = pendingCount;
+        }
+
+        // Optimistic DOM row patcher (Never wipes the table!)
+        function patchSubscriberRow(subId, newStatus) {
+            const sub = currentSubscribers.find(s => s.id === subId);
+            if (!sub) return null;
+
+            const previousState = {
+                dateStatus: sub.dateStatus,
+                deliveredDays: sub.deliveredDays,
+                remainingDays: sub.remainingDays
+            };
+
+            const oldStatus = (sub.dateStatus || 'PENDING').toUpperCase();
+            sub.dateStatus = newStatus;
+
+            if (newStatus === 'DELIVERED' && oldStatus !== 'DELIVERED') {
+                sub.deliveredDays = (sub.deliveredDays || 0) + 1;
+                sub.remainingDays = Math.max(0, (sub.remainingDays || 30) - 1);
+            } else if (oldStatus === 'DELIVERED' && newStatus !== 'DELIVERED') {
+                sub.deliveredDays = Math.max(0, (sub.deliveredDays || 1) - 1);
+                sub.remainingDays = (sub.remainingDays || 0) + 1;
+            }
+
+            const selectedDate = subDatePicker.value || todayStr;
+            const cacheKey = 'subs_' + selectedDate;
+            queryClient.setQueryData(cacheKey, [...currentSubscribers]);
+
+            const rowEl = document.getElementById(`sub-row-${subId}`);
+            if (rowEl) {
+                rowEl.outerHTML = renderSubscriberRow(sub, selectedDate);
+            } else {
+                renderSubscribers();
+            }
+            updateSubscriberStats();
+            return previousState;
+        }
+
+        function rollbackSubscriberRow(subId, previousState) {
+            if (!previousState) return;
+            const sub = currentSubscribers.find(s => s.id === subId);
+            if (!sub) return;
+
+            sub.dateStatus = previousState.dateStatus;
+            sub.deliveredDays = previousState.deliveredDays;
+            sub.remainingDays = previousState.remainingDays;
+
+            const selectedDate = subDatePicker.value || todayStr;
+            const cacheKey = 'subs_' + selectedDate;
+            queryClient.setQueryData(cacheKey, [...currentSubscribers]);
+
+            const rowEl = document.getElementById(`sub-row-${subId}`);
+            if (rowEl) {
+                rowEl.outerHTML = renderSubscriberRow(sub, selectedDate);
+            } else {
+                renderSubscribers();
+            }
+            updateSubscriberStats();
+        }
+
+        // Load Subscribers with TanStack Query Cache & SWR (Stale-While-Revalidate)
+        async function loadStaffSubscribers(force = false) {
+            const date = subDatePicker.value || todayStr;
+            const cacheKey = 'subs_' + date;
+
+            const cached = queryClient.getQueryData(cacheKey);
+            if (cached && !force) {
+                currentSubscribers = cached;
+                renderSubscribers();
+                queryClient.fetchQuery({
+                    queryKey: cacheKey,
+                    queryFn: async () => {
+                        const res = await fetch(`${API_BASE}/api/staff/subscribers?password=${PIN}&date=${date}`);
+                        const data = await res.json();
+                        return data.success ? data.subscribers : [];
+                    },
+                    staleTime: 30000
+                }).then(fresh => {
+                    if (fresh && JSON.stringify(fresh) !== JSON.stringify(cached)) {
+                        currentSubscribers = fresh;
+                        renderSubscribers();
+                    }
+                });
+                return;
+            }
+
+            if (!cached && (!currentSubscribers || currentSubscribers.length === 0)) {
+                subscribersListBody.innerHTML = '<tr><td colspan="7" style="padding: 30px; text-align: center; color: var(--text-light);">Loading subscribers...</td></tr>';
+            }
+
+            try {
+                const subs = await queryClient.fetchQuery({
+                    queryKey: cacheKey,
+                    queryFn: async () => {
+                        const res = await fetch(`${API_BASE}/api/staff/subscribers?password=${PIN}&date=${date}`);
+                        const data = await res.json();
+                        return data.success ? data.subscribers : [];
+                    },
+                    staleTime: 30000,
+                    force: force
+                });
+                currentSubscribers = subs || [];
+                renderSubscribers();
+            } catch (e) {
+                subscribersListBody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #ff5252;">Network error connecting to backend</td></tr>';
+            }
+        }
+
+        // Filter and Render Subscribers
+        function renderSubscribers() {
+            const planFilter = subPlanFilter.value;
+            const searchVal = subSearchInput.value.trim().toLowerCase();
+            const selectedDate = subDatePicker.value || todayStr;
+
+            updateSubscriberStats();
 
             // Filter
             const filtered = currentSubscribers.filter(sub => {
@@ -1751,105 +2747,7 @@
             }
 
             noSubsNotice.style.display = 'none';
-
-            subscribersListBody.innerHTML = filtered.map(sub => {
-                const cleanPhone = (sub.phoneNumber || '').replace(/\D/g, '');
-                const waNumber = cleanPhone.startsWith('91') ? cleanPhone : ('91' + cleanPhone);
-                const st = (sub.dateStatus || 'PENDING').toUpperCase();
-
-                // Status pill
-                let statusBadge = '';
-                if (st === 'DELIVERED') {
-                    statusBadge = '<span class="status-pill pill-delivered">✓ Delivered</span>';
-                } else if (st === 'SKIPPED' || st === 'SKIPPED_BY_USER') {
-                    statusBadge = '<span class="status-pill pill-skipped">⏸ Paused / Skipped</span>';
-                } else {
-                    statusBadge = '<span class="status-pill pill-pending">⏳ Pending</span>';
-                }
-
-                // Payment pill
-                const isPrepaid = sub.paymentStatus === 'PREPAID';
-                const paymentBadge = isPrepaid
-                    ? `<span class="status-pill pill-paid">✓ Pre-Paid (₹${sub.totalAmount || 0})</span>`
-                    : `<span class="status-pill pill-doorstep">💵 Pay at Doorstep (₹${sub.totalAmount || 0})</span>`;
-
-                // Progress
-                const delivered = sub.deliveredDays || 0;
-                const total = sub.totalDays || 30;
-                const percent = Math.min(100, Math.round((delivered / total) * 100));
-
-                return `
-                    <tr style="border-bottom: 1px solid #E2E8F0; transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
-                        <td style="padding: 14px 18px;">
-                            <div style="font-weight: 800; color: #0F172A; font-size: 1.05rem; letter-spacing: -0.2px;">
-                                👤 ${sub.userName || 'Subscriber'}
-                            </div>
-                            <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 0.88rem; color: #334155; font-weight: 600;">📞 ${sub.phoneNumber || 'N/A'}</span>
-                                <a href="https://wa.me/${waNumber}?text=Hello%20${encodeURIComponent(sub.userName || '')},%20Milkman%20Dairy%20se%20aapki%20milk%20delivery%20ke%20regarding%20update." 
-                                   target="_blank" style="text-decoration: none; font-size: 0.95rem;" title="Chat on WhatsApp">💬</a>
-                            </div>
-                        </td>
-                        <td style="padding: 14px 18px; font-size: 0.92rem;">
-                            <div style="color: #0F172A; font-weight: 700;">📍 ${sub.deliveryArea || 'Unassigned Area'}</div>
-                            ${sub.houseNo ? `<div style="color: #64748B; font-size: 0.82rem; margin-top: 2px;">${sub.houseNo}</div>` : ''}
-                        </td>
-                        <td style="padding: 14px 18px; font-size: 0.92rem;">
-                            <strong style="color: #0066FF; font-size: 0.95rem; font-weight: 700;">${sub.planName || 'Daily Milk'}</strong>
-                            <div style="font-size: 0.82rem; color: #64748B; margin-top: 2px;">
-                                Qty: <b style="color: #0F172A;">${sub.dailyQuantity || '1L'}</b> | Started: ${sub.startDate || 'N/A'}
-                            </div>
-                        </td>
-                        <td style="padding: 14px 18px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 5px; color: #475569; font-weight: 600;">
-                                <span>${delivered} of ${total} days</span>
-                                <span style="font-weight: 800; color: #0066FF;">${percent}%</span>
-                            </div>
-                            <div style="width: 100%; height: 7px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
-                                <div style="width: ${percent}%; height: 100%; background: linear-gradient(90deg, #10B981, #00E676); border-radius: 4px;"></div>
-                            </div>
-                            <small style="color: #64748B; font-size: 0.78rem; display: block; margin-top: 4px; font-weight: 600;">
-                                ${sub.remainingDays} days left
-                            </small>
-                        </td>
-                        <td style="padding: 14px 18px;">
-                            ${paymentBadge}
-                        </td>
-                        <td style="padding: 14px 18px;">
-                            ${statusBadge}
-                        </td>
-                        <td style="padding: 14px 18px; text-align: right;">
-                            <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
-                                ${st !== 'DELIVERED' ? `
-                                    <button onclick="promptMarkDelivery('${sub.id}', '${sub.userId}', '${selectedDate}', '${(sub.userName || 'Subscriber').replace(/'/g, "\\'")}', '${sub.dailyQuantity || '1L'}', '${(sub.planName || '').replace(/'/g, "\\'")}')" 
-                                            class="btn-primary" 
-                                            style="padding: 6px 12px; font-size: 0.8rem; background: #00E676; border-color: #00E676; color: #0a2540; font-weight: 700;">
-                                        ✓ Mark Delivered
-                                    </button>
-                                ` : `
-                                    <button onclick="markDelivery('${sub.id}', '${sub.userId}', '${selectedDate}', 'PENDING')" 
-                                            class="btn-login-outline" 
-                                            style="padding: 5px 10px; font-size: 0.75rem; color: #64748B; border-color: #CBD5E1;">
-                                        ↺ Undo
-                                    </button>
-                                `}
-                                ${st !== 'SKIPPED' && st !== 'SKIPPED_BY_USER' ? `
-                                    <button onclick="markDelivery('${sub.id}', '${sub.userId}', '${selectedDate}', 'SKIPPED')" 
-                                            class="btn-login-outline" 
-                                            style="padding: 6px 10px; font-size: 0.8rem; color: #D97706; border-color: #F59E0B; background: #FFFBEB;">
-                                        ⏸ Skip
-                                    </button>
-                                ` : ''}
-                                <button onclick="openSubHistory('${sub.id}', '${(sub.userName || 'Subscriber').replace(/'/g, "\\'")}', '${(sub.planName || '').replace(/'/g, "\\'")}', '${sub.startDate || ''}', ${sub.totalDays || 30}, '${sub.dailyQuantity || '1L'}')" 
-                                        class="btn-login-outline" 
-                                        style="padding: 6px 10px; font-size: 0.8rem; color: #0066FF; border-color: #93C5FD; background: #EFF6FF;" title="View 30-Day Delivery Calendar">
-                                    📋 History
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            subscribersListBody.innerHTML = filtered.map(sub => renderSubscriberRow(sub, selectedDate)).join('');
         }
 
         // Delivery Confirm Modal Handlers
@@ -1899,9 +2797,15 @@
 
                 const qty = delModalQtyInput ? delModalQtyInput.value.trim() : '1L';
                 const time = delModalTimeInput ? delModalTimeInput.value.trim() : getCurrentFormattedTime();
+                const action = pendingDeliveryAction;
 
-                submitDelConfirmBtn.disabled = true;
-                submitDelConfirmBtn.innerText = "Saving...";
+                // Optimistic UI update in-place (Instant feedback, no loading flicker!)
+                const previousState = patchSubscriberRow(action.subscriptionId, 'DELIVERED');
+                closeDeliveryConfirmModal();
+
+                if (activeHistorySub && activeHistorySub.id === action.subscriptionId) {
+                    renderHistoryGrid(activeHistorySub);
+                }
 
                 try {
                     const res = await fetch(API_BASE + '/api/staff/delivery/mark', {
@@ -1909,9 +2813,9 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             password: PIN,
-                            subscriptionId: pendingDeliveryAction.subscriptionId,
-                            userId: pendingDeliveryAction.userId,
-                            deliveryDate: pendingDeliveryAction.deliveryDate,
+                            subscriptionId: action.subscriptionId,
+                            userId: action.userId,
+                            deliveryDate: action.deliveryDate,
                             status: 'DELIVERED',
                             quantityDelivered: qty,
                             deliveryTime: time
@@ -1919,24 +2823,13 @@
                     });
 
                     const data = await res.json();
-                    if (data.success) {
-                        closeDeliveryConfirmModal();
-                        if (pendingDeliveryAction.onComplete) {
-                            pendingDeliveryAction.onComplete();
-                        } else {
-                            loadStaffSubscribers();
-                            if (activeHistorySub && activeHistorySub.id === pendingDeliveryAction.subscriptionId) {
-                                renderHistoryGrid(activeHistorySub);
-                            }
-                        }
-                    } else {
+                    if (!data.success) {
+                        rollbackSubscriberRow(action.subscriptionId, previousState);
                         await customAlert("Failed", data.error || "Could not mark delivery");
                     }
                 } catch (err) {
+                    rollbackSubscriberRow(action.subscriptionId, previousState);
                     await customAlert("Error", "Network connection failed");
-                } finally {
-                    submitDelConfirmBtn.disabled = false;
-                    submitDelConfirmBtn.innerText = "✓ Confirm & Mark Delivered";
                 }
             });
         }
@@ -1948,18 +2841,17 @@
                 deliveryDate: dateStr,
                 customerName: customerName,
                 defaultQty: defaultQty || '1L',
-                planName: planName || 'Daily Milk',
-                onComplete: () => {
-                    loadStaffSubscribers();
-                    if (activeHistorySub && activeHistorySub.id === subId) {
-                        renderHistoryGrid(activeHistorySub);
-                    }
-                }
+                planName: planName || 'Daily Milk'
             });
         };
 
-        // Mark delivery status for a specific date (Undo, Skip, etc.)
+        // Mark delivery status for a specific date (Undo, Skip, etc. with Optimistic In-Place Update)
         window.markDelivery = async (subscriptionId, userId, deliveryDate, status, qty, time) => {
+            const previousState = patchSubscriberRow(subscriptionId, status);
+            if (activeHistorySub && activeHistorySub.id === subscriptionId) {
+                renderHistoryGrid(activeHistorySub);
+            }
+
             try {
                 const res = await fetch(API_BASE + '/api/staff/delivery/mark', {
                     method: 'POST',
@@ -1975,15 +2867,12 @@
                     })
                 });
                 const data = await res.json();
-                if (data.success) {
-                    loadStaffSubscribers();
-                    if (activeHistorySub && activeHistorySub.id === subscriptionId) {
-                        renderHistoryGrid(activeHistorySub);
-                    }
-                } else {
+                if (!data.success) {
+                    rollbackSubscriberRow(subscriptionId, previousState);
                     await customAlert("Error", data.error || "Failed to update delivery");
                 }
             } catch (e) {
+                rollbackSubscriberRow(subscriptionId, previousState);
                 await customAlert("Error", "Network request failed");
             }
         };
@@ -2157,20 +3046,228 @@
             }
         };
 
-        // Form Submit: Add New Subscriber
+        // ==========================================
+        // ASSIGN SUBSCRIPTION / CUSTOM PLAN MODAL LOGIC
+        // ==========================================
+        let currentCustomMilk = 'buffalo'; // 'buffalo' or 'cow'
+        let isCustomPlanMode = true; // true = custom, false = preset
+        let isExistingCustomerMode = true; // true = pick from users, false = new customer
+
+        function populateUserDropdownInModal() {
+            const sel = document.getElementById('addSubUserSelect');
+            if (!sel) return;
+            const currentVal = sel.value;
+            sel.innerHTML = '<option value="">-- Choose from Registered Users (' + allRegisteredUsers.length + ') --</option>' +
+                allRegisteredUsers.map(u => {
+                    const areaStr = u.deliveryArea ? ` [${u.deliveryArea}]` : '';
+                    return `<option value="${u.id}">${u.name || 'Customer'} - ${u.phoneNumber || ''}${areaStr}</option>`;
+                }).join('');
+            if (currentVal) sel.value = currentVal;
+        }
+
+        function setCustomerMode(isExisting) {
+            isExistingCustomerMode = isExisting;
+            const tabExisting = document.getElementById('tabCustomerExisting');
+            const tabNew = document.getElementById('tabCustomerNew');
+            const userGroup = document.getElementById('userSelectGroup');
+            const userIdInput = document.getElementById('addSubUserId');
+
+            if (isExisting) {
+                if (tabExisting) tabExisting.classList.add('active');
+                if (tabNew) tabNew.classList.remove('active');
+                if (userGroup) userGroup.style.display = 'block';
+            } else {
+                if (tabExisting) tabExisting.classList.remove('active');
+                if (tabNew) tabNew.classList.add('active');
+                if (userGroup) userGroup.style.display = 'none';
+                if (userIdInput) userIdInput.value = '';
+                document.getElementById('addSubName').value = '';
+                document.getElementById('addSubPhone').value = '';
+                document.getElementById('addSubHouseNo').value = '';
+                const sel = document.getElementById('addSubUserSelect');
+                if (sel) sel.value = '';
+            }
+        }
+
+        const tabCustomerExisting = document.getElementById('tabCustomerExisting');
+        const tabCustomerNew = document.getElementById('tabCustomerNew');
+        if (tabCustomerExisting) tabCustomerExisting.addEventListener('click', () => setCustomerMode(true));
+        if (tabCustomerNew) tabCustomerNew.addEventListener('click', () => setCustomerMode(false));
+
+        const addSubUserSelect = document.getElementById('addSubUserSelect');
+        if (addSubUserSelect) {
+            addSubUserSelect.addEventListener('change', (e) => {
+                const uid = e.target.value;
+                const found = allRegisteredUsers.find(u => u.id === uid);
+                if (found) {
+                    document.getElementById('addSubUserId').value = found.id;
+                    document.getElementById('addSubName').value = found.name || '';
+                    document.getElementById('addSubPhone').value = found.phoneNumber || '';
+                    if (found.deliveryArea && addSubArea) addSubArea.value = found.deliveryArea;
+                    if (found.houseNo) document.getElementById('addSubHouseNo').value = found.houseNo;
+                } else {
+                    document.getElementById('addSubUserId').value = '';
+                }
+            });
+        }
+
+        function setPlanMode(isCustom) {
+            isCustomPlanMode = isCustom;
+            const tabCustom = document.getElementById('tabPlanCustom');
+            const tabPreset = document.getElementById('tabPlanPreset');
+            const boxCustom = document.getElementById('boxCustomPlan');
+            const boxPreset = document.getElementById('boxPresetPlan');
+
+            if (isCustom) {
+                if (tabCustom) tabCustom.classList.add('active');
+                if (tabPreset) tabPreset.classList.remove('active');
+                if (boxCustom) boxCustom.style.display = 'block';
+                if (boxPreset) boxPreset.style.display = 'none';
+            } else {
+                if (tabCustom) tabCustom.classList.remove('active');
+                if (tabPreset) tabPreset.classList.add('active');
+                if (boxCustom) boxCustom.style.display = 'none';
+                if (boxPreset) boxPreset.style.display = 'block';
+            }
+            updateStaffPlanPreview();
+        }
+
+        const tabPlanCustom = document.getElementById('tabPlanCustom');
+        const tabPlanPreset = document.getElementById('tabPlanPreset');
+        if (tabPlanCustom) tabPlanCustom.addEventListener('click', () => setPlanMode(true));
+        if (tabPlanPreset) tabPlanPreset.addEventListener('click', () => setPlanMode(false));
+
+        const staffMilkCow = document.getElementById('staffMilkCow');
+        const staffMilkBuffalo = document.getElementById('staffMilkBuffalo');
+        const customRateInput = document.getElementById('customRateInput');
+        const customQtyInput = document.getElementById('customDailyQtyInput');
+        const customDaysInput = document.getElementById('customDaysInput');
+        const customTotalAmountInput = document.getElementById('customTotalAmountInput');
+        const qtyPills = document.querySelectorAll('.staff-qty-pill');
+
+        function selectStaffMilk(type) {
+            currentCustomMilk = type;
+            if (type === 'cow') {
+                if (staffMilkCow) staffMilkCow.classList.add('active');
+                if (staffMilkBuffalo) staffMilkBuffalo.classList.remove('active');
+                if (customRateInput) customRateInput.value = 56;
+            } else {
+                if (staffMilkBuffalo) staffMilkBuffalo.classList.add('active');
+                if (staffMilkCow) staffMilkCow.classList.remove('active');
+                if (customRateInput) customRateInput.value = 66;
+            }
+            if (customTotalAmountInput) customTotalAmountInput.dataset.manualOverride = '';
+            updateStaffPlanPreview();
+        }
+
+        if (staffMilkCow) staffMilkCow.addEventListener('click', () => selectStaffMilk('cow'));
+        if (staffMilkBuffalo) staffMilkBuffalo.addEventListener('click', () => selectStaffMilk('buffalo'));
+
+        qtyPills.forEach(p => {
+            p.addEventListener('click', () => {
+                qtyPills.forEach(pill => pill.classList.remove('active'));
+                p.classList.add('active');
+                if (customQtyInput) customQtyInput.value = p.getAttribute('data-qty');
+                if (customTotalAmountInput) customTotalAmountInput.dataset.manualOverride = '';
+                updateStaffPlanPreview();
+            });
+        });
+
+        if (customQtyInput) {
+            customQtyInput.addEventListener('input', () => {
+                qtyPills.forEach(pill => {
+                    if (pill.getAttribute('data-qty') === customQtyInput.value) pill.classList.add('active');
+                    else pill.classList.remove('active');
+                });
+                if (customTotalAmountInput) customTotalAmountInput.dataset.manualOverride = '';
+                updateStaffPlanPreview();
+            });
+        }
+
+        if (customRateInput) {
+            customRateInput.addEventListener('input', () => {
+                if (customTotalAmountInput) customTotalAmountInput.dataset.manualOverride = '';
+                updateStaffPlanPreview();
+            });
+        }
+
+        if (customDaysInput) {
+            customDaysInput.addEventListener('input', () => {
+                if (customTotalAmountInput) customTotalAmountInput.dataset.manualOverride = '';
+                updateStaffPlanPreview();
+            });
+        }
+
+        if (customTotalAmountInput) {
+            customTotalAmountInput.addEventListener('input', () => {
+                customTotalAmountInput.dataset.manualOverride = 'true';
+                updateStaffPlanPreview();
+            });
+        }
+
+        function updateStaffPlanPreview() {
+            const previewName = document.getElementById('previewSummaryName');
+            const previewSub = document.getElementById('previewSummarySub');
+            const previewPrice = document.getElementById('previewSummaryPrice');
+            const startDate = (addSubStartDate && addSubStartDate.value) ? addSubStartDate.value : todayStr;
+
+            if (isCustomPlanMode) {
+                const milkLabel = currentCustomMilk === 'cow' ? 'Desi Cow Milk' : 'Pure Buffalo Milk';
+                const qty = parseFloat(customQtyInput ? customQtyInput.value : 1.5) || 1.0;
+                const rate = parseFloat(customRateInput ? customRateInput.value : 66) || (currentCustomMilk === 'cow' ? 56 : 66);
+                const days = parseInt(customDaysInput ? customDaysInput.value : 30) || 30;
+                const calculatedTotal = Math.round(qty * rate * days);
+
+                if (customTotalAmountInput && !customTotalAmountInput.dataset.manualOverride) {
+                    customTotalAmountInput.value = calculatedTotal;
+                }
+                const displayTotal = customTotalAmountInput ? (customTotalAmountInput.value || calculatedTotal) : calculatedTotal;
+
+                if (previewName) previewName.innerText = `Custom ${milkLabel} • ${qty}L Daily`;
+                if (previewSub) previewSub.innerText = `${days} Days Plan • Rate: ₹${rate}/L • Starts: ${startDate}`;
+                if (previewPrice) previewPrice.innerText = `₹${parseInt(displayTotal).toLocaleString('en-IN')}`;
+            } else {
+                const planSel = document.getElementById('addSubPlan');
+                const opt = planSel ? planSel.options[planSel.selectedIndex] : null;
+                const price = opt ? opt.getAttribute('data-price') : 1999;
+                const name = opt ? opt.innerText.split('—')[0].trim() : 'Daily Milk';
+                const days = opt ? (opt.getAttribute('data-days') || '30') : '30';
+
+                if (previewName) previewName.innerText = name;
+                if (previewSub) previewSub.innerText = `${days} Days Standard Plan • Starts: ${startDate}`;
+                if (previewPrice) previewPrice.innerText = `₹${parseInt(price).toLocaleString('en-IN')}`;
+            }
+        }
+
+        window.assignSubToUser = async (userId, name, phone, area, house) => {
+            await populateSubAreas();
+            setCustomerMode(true);
+            const sel = document.getElementById('addSubUserSelect');
+            if (sel) sel.value = userId;
+            document.getElementById('addSubUserId').value = userId;
+            document.getElementById('addSubName').value = name;
+            document.getElementById('addSubPhone').value = phone;
+            if (area && addSubArea) addSubArea.value = area;
+            if (house) document.getElementById('addSubHouseNo').value = house;
+
+            // Default start date to tomorrow
+            const tom = new Date();
+            tom.setDate(tom.getDate() + 1);
+            if (addSubStartDate) addSubStartDate.value = tom.toISOString().split('T')[0];
+
+            selectStaffMilk('buffalo');
+            updateStaffPlanPreview();
+            if (addSubModal) addSubModal.classList.add('active');
+        };
+
+        // Form Submit: Add New Subscriber / Assign Custom Plan
         addSubscriberForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const userId = document.getElementById('addSubUserId').value.trim();
             const name = document.getElementById('addSubName').value.trim();
             const phone = document.getElementById('addSubPhone').value.trim();
             const area = document.getElementById('addSubArea').value;
             const houseNo = document.getElementById('addSubHouseNo').value.trim();
-            const planSelect = document.getElementById('addSubPlan');
-            const planId = planSelect.value;
-            const selectedOpt = planSelect.options[planSelect.selectedIndex];
-            const planPrice = parseInt(selectedOpt.getAttribute('data-price')) || 1699;
-            const planRate = parseInt(selectedOpt.getAttribute('data-rate')) || 56;
-            const planQty = selectedOpt.getAttribute('data-qty') || '1 Liter';
-            const planName = selectedOpt.innerText.split('—')[0].trim();
             const startDate = document.getElementById('addSubStartDate').value;
             const paymentStatus = document.getElementById('addSubPayment').value;
 
@@ -2178,9 +3275,31 @@
                 return await customAlert("Missing Fields", "Please complete all required fields (*).");
             }
 
+            let planId, planName, dailyQuantity, ratePerUnit, totalDays, totalAmount;
+
+            if (isCustomPlanMode) {
+                const milkLabel = currentCustomMilk === 'cow' ? 'Desi Cow Milk' : 'Pure Buffalo Milk';
+                const qtyVal = parseFloat(customQtyInput ? customQtyInput.value : 1.5) || 1.0;
+                dailyQuantity = `${qtyVal}L ${milkLabel}`;
+                ratePerUnit = parseInt(customRateInput ? customRateInput.value : 66) || (currentCustomMilk === 'cow' ? 56 : 66);
+                totalDays = parseInt(customDaysInput ? customDaysInput.value : 30) || 30;
+                totalAmount = parseInt(customTotalAmountInput ? customTotalAmountInput.value : 0) || Math.round(qtyVal * ratePerUnit * totalDays);
+                planId = `custom_${currentCustomMilk}`;
+                planName = `Custom ${milkLabel} (${qtyVal}L/day)`;
+            } else {
+                const planSelect = document.getElementById('addSubPlan');
+                planId = planSelect.value;
+                const selectedOpt = planSelect.options[planSelect.selectedIndex];
+                totalAmount = parseInt(selectedOpt.getAttribute('data-price')) || 1999;
+                ratePerUnit = parseInt(selectedOpt.getAttribute('data-rate')) || 66;
+                dailyQuantity = selectedOpt.getAttribute('data-qty') || '1 Liter Buffalo Milk';
+                totalDays = parseInt(selectedOpt.getAttribute('data-days')) || 30;
+                planName = selectedOpt.innerText.split('—')[0].trim();
+            }
+
             const saveBtn = document.getElementById('saveSubBtn');
             saveBtn.disabled = true;
-            saveBtn.innerText = "Saving...";
+            saveBtn.innerText = "Activating Plan...";
 
             try {
                 const res = await fetch(API_BASE + '/api/staff/subscribers/add', {
@@ -2188,15 +3307,17 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         password: PIN,
+                        userId: userId || undefined,
                         name,
                         phoneNumber: phone,
                         deliveryArea: area,
                         houseNo,
                         planId,
                         planName,
-                        dailyQuantity: planQty,
-                        ratePerUnit: planRate,
-                        totalAmount: planPrice,
+                        dailyQuantity,
+                        ratePerUnit,
+                        totalDays,
+                        totalAmount,
                         startDate,
                         paymentStatus
                     })
@@ -2204,11 +3325,13 @@
 
                 const data = await res.json();
                 if (data.success) {
-                    await customAlert("Success!", `Subscriber ${name} has been enrolled in ${planName} (30 days)!`);
+                    await customAlert("Subscription Activated!", `✓ Plan assigned to ${name} successfully!\nPlan: ${planName}\nDuration: ${totalDays} Days\nTotal: ₹${totalAmount}\nStart Date: ${startDate}`);
                     addSubModal.classList.remove('active');
                     addSubscriberForm.reset();
-                    addSubStartDate.value = todayStr;
+                    document.getElementById('addSubUserId').value = '';
+                    if (addSubStartDate) addSubStartDate.value = todayStr;
                     loadStaffSubscribers();
+                    loadStaffUsers();
                 } else {
                     await customAlert("Failed", data.error || "Could not register subscriber");
                 }
@@ -2221,9 +3344,12 @@
         });
 
         // Event Listeners for Subscribers Tab
-        openAddSubModalBtn.addEventListener('click', () => {
-            populateSubAreas();
-            addSubStartDate.value = todayStr;
+        openAddSubModalBtn.addEventListener('click', async () => {
+            await populateSubAreas();
+            setCustomerMode(false);
+            if (addSubStartDate) addSubStartDate.value = todayStr;
+            selectStaffMilk('buffalo');
+            updateStaffPlanPreview();
             addSubModal.classList.add('active');
         });
         closeAddSubModalBtn.addEventListener('click', () => addSubModal.classList.remove('active'));
@@ -2243,6 +3369,10 @@
         subSearchInput.addEventListener('input', renderSubscribers);
         refreshSubsBtn.addEventListener('click', loadStaffSubscribers);
         markAllDeliveredBtn.addEventListener('click', markAllTodayPending);
+
+        const addSubPlanSelect = document.getElementById('addSubPlan');
+        if (addSubPlanSelect) addSubPlanSelect.addEventListener('change', updateStaffPlanPreview);
+        if (addSubStartDate) addSubStartDate.addEventListener('change', updateStaffPlanPreview);
 
         // ==========================================
         // BATCH VIDEOS & TRACEABILITY LOGIC

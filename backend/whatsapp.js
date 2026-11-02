@@ -1,37 +1,14 @@
-import fs from 'fs';
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
 import qrcode from 'qrcode-terminal';
-
-// Auto-detect system Google Chrome / Chromium on Linux VM to save disk space
-const systemChromePath = [
-    '/usr/bin/google-chrome-stable',
-    '/usr/bin/google-chrome',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/chromium'
-].find(p => fs.existsSync(p));
-
-const puppeteerConfig = {
-    headless: true,
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--disable-gpu'
-    ]
-};
-if (systemChromePath) {
-    console.log('Using system Chrome at:', systemChromePath);
-    puppeteerConfig.executablePath = systemChromePath;
-}
 
 // Initialize the WhatsApp Client
 // We use LocalAuth so it remembers your session across restarts
 const client = new Client({
     authStrategy: new LocalAuth(),
-    puppeteer: puppeteerConfig
+    puppeteer: {
+        args: ['--no-sandbox']
+    }
 });
 
 let isClientReady = false;
@@ -45,32 +22,9 @@ client.on('qr', (qr) => {
 });
 
 // When successfully authenticated
-client.on('ready', async () => {
+client.on('ready', () => {
     console.log('✅ WhatsApp Web Client is Ready!');
     isClientReady = true;
-
-    // Apply WhatsApp Web LID migration bypass
-    try {
-        await client.pupPage.evaluate(() => {
-            try {
-                if (window.injectToFunction) {
-                    window.injectToFunction(
-                        { module: 'WAWebLid1X1MigrationGating', function: 'Lid1X1MigrationUtils.isLidMigrated' },
-                        () => false
-                    );
-                }
-            } catch (_) {}
-            try {
-                const gating = window.require('WAWebLid1X1MigrationGating');
-                if (gating?.Lid1X1MigrationUtils) {
-                    gating.Lid1X1MigrationUtils.isLidMigrated = () => false;
-                }
-            } catch (_) {}
-        });
-        console.log('✅ WhatsApp LID migration bypass applied');
-    } catch (e) {
-        console.warn('LID bypass warning (non-fatal):', e.message);
-    }
 });
 
 // Handle authentication failures
@@ -99,83 +53,105 @@ export const sendWhatsAppOTP = async (phoneNumber, otpCode) => {
 
     try {
         // Format number: remove + and spaces
-        let cleanNumber = phoneNumber.replace(/\D/g, ''); 
-        
+        let cleanNumber = phoneNumber.replace(/\D/g, '');
+
         // Auto-add Indian country code if user only entered 10 digits
         if (cleanNumber.length === 10) {
             cleanNumber = '91' + cleanNumber;
         }
 
-        // Apply WhatsApp Web LID migration bypass before sending
-        await client.pupPage.evaluate(() => {
-            try {
-                if (window.injectToFunction) {
-                    window.injectToFunction(
-                        { module: 'WAWebLid1X1MigrationGating', function: 'Lid1X1MigrationUtils.isLidMigrated' },
-                        () => false
-                    );
-                }
-            } catch (_) {}
-            try {
-                const gating = window.require('WAWebLid1X1MigrationGating');
-                if (gating?.Lid1X1MigrationUtils) {
-                    gating.Lid1X1MigrationUtils.isLidMigrated = () => false;
-                }
-            } catch (_) {}
-        }).catch(() => {});
-
-        let targetId = `${cleanNumber}@c.us`;
-        try {
-            const numberId = await client.getNumberId(cleanNumber);
-            if (numberId && numberId._serialized) {
-                targetId = numberId._serialized;
-            }
-        } catch (e) {
-            console.warn('getNumberId warning:', e.message);
-        }
+        const chatId = `${cleanNumber}@c.us`;
 
         const message = `🥛 *Milkman Dairy*\n\nYour Login OTP is: *${otpCode}*\nDo not share this code with anyone.`;
-        
-        try {
-            await client.sendMessage(targetId, message);
-        } catch (err) {
-            if (err.message && err.message.includes('No LID')) {
-                console.warn('Handling No LID error via direct WWebJS evaluation...');
-                await client.pupPage.evaluate(async (chatId, text) => {
-                    const wid = window.require('WAWebWidFactory').createWid(chatId);
-                    let chat = window.require('WAWebCollections').Chat.get(wid);
-                    if (!chat) {
-                        try {
-                            const findAction = window.require('WAWebFindChatAction');
-                            const res = await findAction.findOrCreateLatestChat(wid);
-                            chat = res?.chat;
-                        } catch (_) {
-                            chat = await window.require('WAWebCollections').Chat.find(wid);
-                        }
-                    }
-                    if (chat) {
-                        await window.WWebJS.sendMessage(chat, text);
-                    } else {
-                        throw new Error('Could not initialize chat for ' + chatId);
-                    }
-                }, targetId, message);
-            } else {
-                throw err;
-            }
-        }
-        
-        console.log(`✅ WhatsApp OTP sent to ${phoneNumber} (${targetId})`);
+
+        await client.sendMessage(chatId, message);
+        console.log(`✅ WhatsApp OTP sent to ${phoneNumber}`);
     } catch (error) {
         console.error('❌ Failed to send WhatsApp OTP:', error);
         throw error;
     }
 };
 
+export const OWNER_PHONE = "7696880795";
+export const OWNER_CHAT_ID = "917696880795@c.us";
+
+export const formatToChatId = (phoneNumber) => {
+    if (!phoneNumber) return null;
+    let cleanNumber = String(phoneNumber).replace(/\D/g, '');
+    if (cleanNumber.length === 10) {
+        cleanNumber = '91' + cleanNumber;
+    }
+    return `${cleanNumber}@c.us`;
+};
+
 export const sendWhatsAppMessage = async (chatId, message) => {
-    if (!isClientReady) throw new Error('WhatsApp not ready');
+    if (!isClientReady) {
+        console.warn('⚠️ WhatsApp client not ready yet. Skipping message send.');
+        return false;
+    }
     try {
         await client.sendMessage(chatId, message);
+        console.log(`✅ WhatsApp message sent to ${chatId}`);
+        return true;
     } catch (error) {
-        console.error('Failed to send WhatsApp message to', chatId, error);
+        console.error('❌ Failed to send WhatsApp message to', chatId, error.message);
+        return false;
     }
+};
+
+export const sendWhatsAppNotification = async (phoneNumber, message) => {
+    const chatId = formatToChatId(phoneNumber);
+    if (!chatId) return false;
+    return await sendWhatsAppMessage(chatId, message);
+};
+
+export const sendOwnerAlert = async (message) => {
+    console.log(`📢 Dispatching Owner WhatsApp Alert to ${OWNER_PHONE}...`);
+    return await sendWhatsAppMessage(OWNER_CHAT_ID, message);
+};
+>>>>>>> Stashed changes
+            } else {
+    throw err;
+}
+        }
+<<<<<<< Updated upstream
+
+console.log(`✅ WhatsApp OTP sent to ${phoneNumber} (${targetId})`);
+=======
+
+        console.log(`✅ WhatsApp message sent to ${chatId}`);
+        return true;
+>>>>>>> Stashed changes
+    } catch (error) {
+    console.error('❌ Failed to send WhatsApp message to', chatId, error.message);
+    return false;
+}
+}
+
+// Function to send OTP via WhatsApp
+export const sendWhatsAppOTP = async (phoneNumber, otpCode) => {
+    const chatId = formatToChatId(phoneNumber);
+    if (!chatId) throw new Error('Invalid phone number');
+
+    const message = `🥛 *Milkman Dairy*\n\nYour Login OTP is: *${otpCode}*\nDo not share this code with anyone.`;
+    const success = await sendRobustMessage(chatId, message);
+    if (!success) {
+        throw new Error('Failed to deliver OTP via WhatsApp');
+    }
+    return true;
+};
+
+export const sendWhatsAppMessage = async (chatId, message) => {
+    return await sendRobustMessage(chatId, message);
+};
+
+export const sendWhatsAppNotification = async (phoneNumber, message) => {
+    const chatId = formatToChatId(phoneNumber);
+    if (!chatId) return false;
+    return await sendRobustMessage(chatId, message);
+};
+
+export const sendOwnerAlert = async (message) => {
+    console.log(`📢 Dispatching Owner WhatsApp Alert to ${OWNER_PHONE}...`);
+    return await sendRobustMessage(OWNER_CHAT_ID, message);
 };

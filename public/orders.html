@@ -401,6 +401,8 @@
     <span id="toastMessage">Action completed</span>
   </div>
 
+  <!-- TanStack Query SWR Client -->
+  <script src="js/query-client.js"></script>
   <!-- JavaScript Application Logic -->
   <script data-purpose="orders-app-logic">
     const API_HOST = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') 
@@ -621,39 +623,70 @@
       loadOrders();
     }
 
-    // Load Orders from Server with Fallback
-    async function loadOrders() {
-      const stack = document.getElementById('ordersStack');
+    // Load Orders from Server with SWR Cache & Fallback
+    async function loadOrders(forceRefresh = false) {
       const userSession = localStorage.getItem('milkmanUser');
 
-      let fetchedOrders = [];
+      const applyOrders = (ordersList) => {
+        if (!ordersList || ordersList.length === 0) {
+          allOrders = fallbackMockOrders;
+        } else {
+          allOrders = ordersList;
+        }
+        updateStatusCounts();
+        renderFilteredOrders();
+      };
 
-      if (userSession) {
-        try {
-          const u = JSON.parse(userSession);
-          const email = u.email || `${(u.phone || '').replace(/\D/g, '')}@milkman.local`;
-          
+      if (!userSession) {
+        applyOrders([]);
+        return;
+      }
+
+      try {
+        const u = JSON.parse(userSession);
+        const email = u.email || `${(u.phone || '').replace(/\D/g, '')}@milkman.local`;
+        const cacheKey = 'orders_' + email;
+
+        // TanStack SWR Pattern: Render from cache immediately if present
+        const cached = window.queryClient ? window.queryClient.getQueryData(cacheKey) : null;
+        if (cached) {
+          applyOrders(cached);
+        }
+
+        const fetchFn = async () => {
           const res = await fetch(`${API_BASE}/api/orders/history?email=${encodeURIComponent(email)}`);
           if (res.ok) {
             const data = await res.json();
-            if (data.success && Array.isArray(data.orders) && data.orders.length > 0) {
-              fetchedOrders = data.orders;
+            if (data.success && Array.isArray(data.orders)) {
+              return data.orders;
             }
           }
-        } catch (err) {
-          console.warn("Backend orders fetch error, showing mock template:", err);
+          return [];
+        };
+
+        let freshOrders;
+        if (window.queryClient) {
+          if (forceRefresh) {
+            window.queryClient.invalidateQueries(cacheKey);
+          }
+          freshOrders = await window.queryClient.fetchQuery(cacheKey, fetchFn, {
+            staleTime: 25000,
+            backgroundRevalidate: true,
+            onBackgroundUpdate: (updatedOrders) => {
+              applyOrders(updatedOrders);
+            }
+          });
+        } else {
+          freshOrders = await fetchFn();
+        }
+
+        applyOrders(freshOrders);
+      } catch (err) {
+        console.warn("Backend orders fetch error, showing mock template:", err);
+        if (allOrders.length === 0) {
+          applyOrders([]);
         }
       }
-
-      // If no backend orders found for this user, use the complete high-fidelity mockup orders
-      if (fetchedOrders.length === 0) {
-        allOrders = fallbackMockOrders;
-      } else {
-        allOrders = fetchedOrders;
-      }
-
-      updateStatusCounts();
-      renderFilteredOrders();
     }
 
     // Update Counts in Filter Tabs
@@ -1281,7 +1314,7 @@
       });
     };
 
-    // Cancel Pending Order
+    // Cancel Pending Order (Optimistic UI Update - 0ms perceived latency)
     window.cancelPendingOrder = async (orderId) => {
       const order = allOrders.find(o => o.id === orderId);
       const confirmed = await window.showCancelConfirmModal(orderId, order ? order.totalAmount : null);
@@ -1295,14 +1328,24 @@
         return;
       }
 
-      if (window.showMilkmanLoader) {
-        window.showMilkmanLoader("CANCELLING ORDER...", "Processing instant refund back to source");
+      const originalStatus = order ? order.status : 'PENDING';
+      const u = JSON.parse(userSession);
+      const email = u.email || `${(u.phone || '').replace(/\D/g, '')}@milkman.local`;
+      const cacheKey = 'orders_' + email;
+
+      // 1. OPTIMISTIC UPDATE: Immediate in-place status flip (no intrusive full-screen blocking loader!)
+      if (order) {
+        order.status = 'CANCELLED';
+        order.cancellationReason = 'Cancelled by customer';
+        order.refundStatus = `₹${order.totalAmount || 0} refund initiated to original payment source`;
+        updateStatusCounts();
+        renderFilteredOrders();
       }
 
-      try {
-        const u = JSON.parse(userSession);
-        const email = u.email || `${(u.phone || '').replace(/\D/g, '')}@milkman.local`;
+      showToast(`Order #${(orderId || '').slice(-6).toUpperCase()} cancelled • Refund initiated`, false);
 
+      // 2. BACKGROUND MUTATION
+      try {
         const res = await fetch(`${API_BASE}/api/orders/user-cancel`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1310,17 +1353,26 @@
         });
         const data = await res.json();
         if (data.success) {
-          showToast("Order cancelled successfully.");
-          loadOrders();
+          if (window.queryClient) {
+            window.queryClient.invalidateQueries(cacheKey);
+          }
         } else {
+          // ROLLBACK on failure
+          if (order) {
+            order.status = originalStatus;
+            updateStatusCounts();
+            renderFilteredOrders();
+          }
           showToast(data.error || "Failed to cancel order.", true);
         }
       } catch (e) {
-        showToast("Error communicating with server.", true);
-      } finally {
-        if (window.hideMilkmanLoader) {
-          window.hideMilkmanLoader(500);
+        // ROLLBACK on network error
+        if (order) {
+          order.status = originalStatus;
+          updateStatusCounts();
+          renderFilteredOrders();
         }
+        showToast("Network error. Order cancellation could not be sent.", true);
       }
     };
 

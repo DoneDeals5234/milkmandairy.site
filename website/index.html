@@ -418,6 +418,53 @@
                     <span class="ribbon-agent-note">🛵 Confirmation & payment at doorstep</span>
                 </div>
             </div>
+
+            <!-- Plan 5: Custom Plan Builder Horizontal Ribbon Card -->
+            <div class="plan-horizontal-ribbon ribbon-custom-builder" id="ribbonCustomPlanCard">
+                <div class="ribbon-glow-ambient glow-custom"></div>
+                <div class="plan-ribbon-visual visual-custom">
+                    <img src="assets/cow_milk_plan.jpg" alt="Custom Milk Plan Builder" class="plan-ribbon-img img-custom-ribbon">
+                    <div class="plan-ribbon-fade fade-custom"></div>
+                    <div class="ribbon-corner-badge badge-custom">
+                        <span>✨ Custom Plan Builder</span>
+                    </div>
+                </div>
+
+                <div class="plan-ribbon-content">
+                    <div class="ribbon-top-badge badge-custom-top">
+                        <span class="ribbon-pulse-dot dot-custom"></span>
+                        <span class="ribbon-badge-text">Personalized Daily Supply • Choose Milk, Liters &amp; Start Date</span>
+                    </div>
+                    <h3 class="ribbon-title custom-title-effect">Build Your Custom Milk Plan</h3>
+                    <p class="ribbon-desc">
+                        Need 1.5 Liters of Buffalo Milk or 2 Liters of Cow Milk daily? Customize your milk type, required quantity (0.5L to 5L+), flexible duration and starting date. Bottled &amp; delivered fresh daily!
+                    </p>
+                    <div class="ribbon-chips">
+                        <span class="ribbon-chip"><span class="chip-icon">🥛</span> Cow or Buffalo</span>
+                        <span class="ribbon-chip"><span class="chip-icon">⚖️</span> Any Liters (0.5L - 5L+)</span>
+                        <span class="ribbon-chip"><span class="chip-icon">📅</span> Pick Start Date</span>
+                        <span class="ribbon-chip"><span class="chip-icon">🛵</span> Free Doorstep Delivery</span>
+                    </div>
+                </div>
+
+                <div class="plan-ribbon-action">
+                    <div class="ribbon-price-box">
+                        <div class="ribbon-liter-rate">
+                            <span class="rate-curr">₹</span><span class="rate-amount">56</span>
+                            <span class="rate-unit">/ L onwards</span>
+                        </div>
+                        <div class="ribbon-monthly-wrap">
+                            <span class="monthly-amount">Custom Price</span>
+                            <span class="monthly-duration">Flexible Days</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary btn-book-plan btn-ribbon-3d btn-custom-3d" id="btnOpenCustomPlanSheet" type="button">
+                        <span>Customize Plan</span>
+                        <span class="btn-arrow-3d">✨</span>
+                    </button>
+                    <span class="ribbon-agent-note">⚡ Slide up half-screen customizer</span>
+                </div>
+            </div>
         </div>
 
     </section>
@@ -762,6 +809,260 @@
                 <button id="backBtn" class="btn-login-outline"
                     style="width: 100%; margin-top: 10px; border: none;">Back</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Custom Plan Bottom Sheet Modal (Slides up half-screen) -->
+    <div id="customPlanSheetModal" class="custom-sheet-modal" aria-hidden="true">
+        <div class="custom-sheet-backdrop" id="customSheetBackdrop"></div>
+        <div class="custom-sheet-drawer" id="customSheetDrawer" role="dialog" aria-modal="true" aria-labelledby="customSheetTitle">
+            <!-- Drag Grabber for Mobile Feel -->
+            <div class="sheet-grabber-bar">
+                <div class="sheet-grabber"></div>
+            </div>
+
+            <!-- Drawer Header -->
+            <div class="sheet-drawer-header">
+                <div>
+                    <span class="sheet-pill-badge">✨ Custom Milk Subscription</span>
+                    <h3 class="sheet-drawer-title" id="customSheetTitle">Build Your Custom Plan</h3>
+                    <p class="sheet-drawer-subtitle">Personalize milk type, daily liters &amp; start date</p>
+                </div>
+                <button type="button" class="sheet-close-icon-btn" id="closeCustomPlanSheetBtn" aria-label="Close customizer">✕</button>
+            </div>
+
+            <!-- Drawer Content Body -->
+            <div class="sheet-drawer-body">
+                <!-- Step 1: Choose Milk Type -->
+                <div class="custom-builder-section">
+                    <label class="custom-section-heading">
+                        <span class="step-num-badge">1</span> Choose Milk Type
+                    </label>
+                    <div class="milk-choice-grid">
+                        <div class="milk-choice-card active" id="choiceCow" data-milk="cow" data-rate="56" data-name="Pure Desi Cow Milk">
+                            <div class="choice-badge">Gir Cow A2</div>
+                            <div class="choice-icon">🐄</div>
+                            <div class="choice-title">Pure Desi Cow Milk</div>
+                            <div class="choice-sub">Light, naturally sweet &amp; easy digestion</div>
+                            <div class="choice-rate"><b>₹56</b> / Liter</div>
+                            <div class="choice-check-circle">✓</div>
+                        </div>
+
+                        <div class="milk-choice-card" id="choiceBuffalo" data-milk="buffalo" data-rate="66" data-name="Pure Buffalo Milk">
+                            <div class="choice-badge">Murrah Buffalo</div>
+                            <div class="choice-icon">🐃</div>
+                            <div class="choice-title">Pure Buffalo Milk</div>
+                            <div class="choice-sub">Thick, rich cream, dense malai &amp; curd</div>
+                            <div class="choice-rate"><b>₹66</b> / Liter</div>
+                            <div class="choice-check-circle">✓</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Choose Daily Amount (Quantity) -->
+                <div class="custom-builder-section">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px;">
+                        <label class="custom-section-heading" style="margin-bottom: 0;">
+                            <span class="step-num-badge">2</span> Daily Amount Needed
+                        </label>
+                        <span class="qty-live-rate" id="qtyLiveRateDisplay">₹56 / day</span>
+                    </div>
+
+                    <!-- Quick Pick Pills -->
+                    <div class="qty-quick-picks">
+                        <button type="button" class="qty-quick-pill" data-qty="0.5">500ml (0.5L)</button>
+                        <button type="button" class="qty-quick-pill active" data-qty="1.0">1 Liter</button>
+                        <button type="button" class="qty-quick-pill" data-qty="1.5">1.5 Liters</button>
+                        <button type="button" class="qty-quick-pill" data-qty="2.0">2 Liters</button>
+                        <button type="button" class="qty-quick-pill" data-qty="3.0">3 Liters</button>
+                    </div>
+
+                    <!-- Tactile Stepper -->
+                    <div class="qty-stepper-row">
+                        <span class="stepper-helper-text">Fine-tune exact quantity:</span>
+                        <div class="qty-stepper-widget">
+                            <button type="button" class="stepper-click-btn" id="stepperMinusBtn" aria-label="Decrease quantity">−</button>
+                            <div class="stepper-center-val">
+                                <span class="stepper-val-num" id="stepperValText">1.0</span>
+                                <span class="stepper-val-unit">Liters / Day</span>
+                            </div>
+                            <button type="button" class="stepper-click-btn" id="stepperPlusBtn" aria-label="Increase quantity">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Choose Start Date -->
+                <div class="custom-builder-section">
+                    <label class="custom-section-heading">
+                        <span class="step-num-badge">3</span> Starting Date
+                    </label>
+                    <div class="start-date-container">
+                        <div class="date-quick-chips">
+                            <button type="button" class="date-quick-chip active" id="chipStartTomorrow">
+                                <span class="chip-title-text">🌅 Tomorrow Morning</span>
+                                <small id="tomorrowDateLabel" class="chip-date-label">Loading...</small>
+                            </button>
+                            <button type="button" class="date-quick-chip" id="chipStartDayAfter">
+                                <span class="chip-title-text">🗓️ Day After Tomorrow</span>
+                                <small id="dayAfterDateLabel" class="chip-date-label">Loading...</small>
+                            </button>
+                        </div>
+                        <div class="date-picker-inline">
+                            <label for="customDatePickerInput" class="custom-date-label">Or pick specific date:</label>
+                            <input type="date" id="customDatePickerInput" class="custom-date-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Duration (Days) -->
+                <div class="custom-builder-section">
+                    <label class="custom-section-heading">
+                        <span class="step-num-badge">4</span> Subscription Duration
+                    </label>
+                    <div class="duration-pills-row">
+                        <button type="button" class="dur-pick-pill" data-days="15">15 Days (Trial)</button>
+                        <button type="button" class="dur-pick-pill active" data-days="30">30 Days (1 Month)</button>
+                        <button type="button" class="dur-pick-pill" data-days="60">60 Days (2 Months)</button>
+                    </div>
+                </div>
+
+                <!-- Live Price Card & Add to Cart Action -->
+                <div class="sheet-summary-card">
+                    <div class="sheet-summary-top">
+                        <div class="summary-plan-details">
+                            <div class="summary-plan-headline" id="sheetSummaryHeadline">Pure Desi Cow Milk • 1L Daily</div>
+                            <div class="summary-plan-sub" id="sheetSummarySub">Starts Tomorrow • 30 Days Deliveries</div>
+                        </div>
+                        <div class="summary-badge-free">🛵 Free Doorstep Delivery</div>
+                    </div>
+
+                    <div class="sheet-summary-math">
+                        <div class="math-row">
+                            <span class="math-label">Daily Cost:</span>
+                            <span class="math-val" id="sheetDailyCost">₹56 / day</span>
+                        </div>
+                        <div class="math-row">
+                            <span class="math-label">Duration:</span>
+                            <span class="math-val" id="sheetDurationVal">30 Days</span>
+                        </div>
+                        <div class="math-row total-highlight">
+                            <div class="math-total-label">
+                                <strong>Total Plan Amount</strong>
+                                <small>Pay at doorstep after delivery</small>
+                            </div>
+                            <div class="math-total-num">
+                                <span class="math-curr">₹</span>
+                                <span id="sheetTotalAmount">1,680</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-primary btn-add-custom-plan-action" id="btnAddToCartCustomPlan">
+                        <span>Add Custom Plan to Cart 🛒</span>
+                        <span class="btn-arrow-icon">→</span>
+                    </button>
+                    <div class="doorstep-note-bottom">🛡️ 100% Pure &amp; Farm Fresh Guarantee • Pause / Resume anytime</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- PRODUCT DETAIL HALF-SCREEN BOTTOM SHEET        -->
+    <!-- ============================================== -->
+    <div id="productBottomSheetBackdrop" class="product-sheet-backdrop" style="display: none;"></div>
+
+    <div id="productBottomSheet" class="product-bottom-sheet" aria-hidden="true">
+        <!-- Drag Handle Indicator -->
+        <div class="sheet-drag-handle-wrap" id="productSheetHandle">
+            <div class="sheet-drag-handle"></div>
+        </div>
+
+        <!-- Sheet Close Button -->
+        <button type="button" class="sheet-close-btn" id="productSheetCloseBtn" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+
+        <div class="product-sheet-content">
+            <!-- Multi-Image Carousel / Gallery Section -->
+            <div class="product-gallery-container">
+                <div class="gallery-main-viewport">
+                    <img id="productSheetMainImage" src="" alt="Product Image" class="gallery-main-img">
+                    
+                    <!-- Navigation Arrows -->
+                    <button type="button" class="gallery-nav-btn nav-prev" id="galleryPrevBtn" aria-label="Previous image">‹</button>
+                    <button type="button" class="gallery-nav-btn nav-next" id="galleryNextBtn" aria-label="Next image">›</button>
+
+                    <!-- Counter Badge -->
+                    <div class="gallery-counter-badge" id="galleryCounterBadge">1 / 1</div>
+                </div>
+
+                <!-- Thumbnails Strip -->
+                <div class="gallery-thumbnails-strip" id="galleryThumbnailsStrip">
+                    <!-- Thumbnails injected via JS -->
+                </div>
+            </div>
+
+            <!-- Product Info Body -->
+            <div class="product-sheet-info">
+                <div class="product-sheet-header-row">
+                    <div>
+                        <div class="product-sheet-tag">Farm Fresh 100% Pure</div>
+                        <h2 class="product-sheet-title" id="productSheetTitle">Product Name</h2>
+                    </div>
+                    <div class="product-sheet-stock" id="productSheetStockBadge">In Stock</div>
+                </div>
+
+                <div class="product-sheet-price-row">
+                    <div class="product-sheet-price" id="productSheetPrice">₹0</div>
+                    <div class="product-sheet-unit" id="productSheetUnit">/ 1 Litre</div>
+                </div>
+
+                <!-- Product Description -->
+                <div class="product-sheet-desc-box">
+                    <h4 class="sheet-desc-title">Product Details &amp; Purity</h4>
+                    <p class="product-sheet-desc" id="productSheetDesc"></p>
+                </div>
+
+                <!-- Quality Highlights -->
+                <div class="product-sheet-badges-grid">
+                    <div class="quality-badge-item">
+                        <span class="badge-icon">🥛</span>
+                        <div>
+                            <strong>100% Raw &amp; Unadulterated</strong>
+                            <small>Directly from healthy farm cattle, unpasteurized and unboiled.</small>
+                        </div>
+                    </div>
+                    <div class="quality-badge-item">
+                        <span class="badge-icon">🔬</span>
+                        <div>
+                            <strong>Daily Lab Tested</strong>
+                            <small>Tested for optimal fat &amp; SNF percentage with zero preservatives.</small>
+                        </div>
+                    </div>
+                    <div class="quality-badge-item">
+                        <span class="badge-icon">🛵</span>
+                        <div>
+                            <strong>Sanitized Cold-Chain Delivery</strong>
+                            <small>Early morning chilled doorstep delivery directly to your home.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky Bottom Action Footer -->
+        <div class="product-sheet-footer">
+            <div class="sheet-qty-selector">
+                <button type="button" class="btn-qty-mod" id="sheetQtyMinus" aria-label="Decrease quantity">−</button>
+                <span class="sheet-qty-val" id="sheetQtyVal">1</span>
+                <button type="button" class="btn-qty-mod" id="sheetQtyPlus" aria-label="Increase quantity">+</button>
+            </div>
+
+            <button type="button" class="btn-sheet-add-cart" id="sheetAddToCartBtn">
+                <span class="btn-cart-icon">🛒</span>
+                <span id="sheetAddToCartText">Add to Cart • <span id="sheetAddCartPrice">₹0</span></span>
+            </button>
         </div>
     </div>
 

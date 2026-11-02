@@ -6,7 +6,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth.js";
-import { initWhatsApp, sendWhatsAppOTP, sendWhatsAppMessage } from "./whatsapp.js";
+import { initWhatsApp, sendWhatsAppOTP, sendWhatsAppMessage, sendWhatsAppNotification, sendOwnerAlert, OWNER_PHONE } from "./whatsapp.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,6 +70,21 @@ const db = createClient({
     authToken: process.env.TURSO_AUTH_TOKEN || ""
 });
 
+// Auto-verify performance indexes
+async function ensureDbIndexes() {
+    try {
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_sub_del_sub_date ON subscription_deliveries (subscriptionId, deliveryDate);`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_sub_del_sub_status ON subscription_deliveries (subscriptionId, status);`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_user_sub_status ON user_subscriptions (status);`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_user_sub_userId ON user_subscriptions (userId);`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_user_phone ON user (phoneNumber);`);
+        await db.execute(`CREATE INDEX IF NOT EXISTS idx_areas_active ON serviceable_areas (isActive);`);
+    } catch (e) {
+        // Silently continue if tables/indexes are already configured
+    }
+}
+ensureDbIndexes();
+
 app.post("/api/custom/update-player-id", async (req, res) => {
     try {
         const { email, playerId } = req.body;
@@ -104,6 +119,44 @@ app.post("/api/custom/update-status", async (req, res) => {
         });
 
         console.log(`Status update for ${email}:`, result.rowsAffected, "rows affected");
+
+        // WhatsApp Notification on successful login
+        if (status === 'active') {
+            (async () => {
+                try {
+                    const userRes = await db.execute({
+                        sql: "SELECT name, phoneNumber FROM user WHERE email = ?",
+                        args: [email]
+                    });
+                    const customerName = (userRes.rows[0]?.name) || "Valued Customer";
+                    const customerPhone = phone || userRes.rows[0]?.phoneNumber;
+                    const loginTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+                    // 1. Welcome Message to Customer
+                    if (customerPhone) {
+                        const customerMsg = `🥛 *Milkman Dairy - Welcome!* 🎉\n\n` +
+                            `Hello *${customerName}*,\n` +
+                            `You have successfully logged in to *Milkman Dairy*. 🐄\n\n` +
+                            `Explore 100% farm fresh pure cow & buffalo milk, ghee, and daily dairy subscriptions at your doorstep!\n\n` +
+                            `🌐 Website: https://milkman.site\n` +
+                            `Need assistance? Feel free to reply to this message. 🙏`;
+                        await sendWhatsAppNotification(customerPhone, customerMsg);
+                    }
+
+                    // 2. Alert Message to Owner (7696880795)
+                    const ownerMsg = `🚨 *Milkman Admin Alert: User Login* 👤\n\n` +
+                        `*Customer Name:* ${customerName}\n` +
+                        `*Phone:* ${customerPhone || 'Not provided'}\n` +
+                        `*Email:* ${email}\n` +
+                        `*Login Time:* ${loginTime}\n` +
+                        `*Status:* Successfully Logged In`;
+                    await sendOwnerAlert(ownerMsg);
+                } catch (notifyErr) {
+                    console.error("Login WhatsApp notification error:", notifyErr.message);
+                }
+            })();
+        }
+
         res.json({ success: true });
     } catch (e) {
         console.error("Status update error:", e);
@@ -179,7 +232,25 @@ app.post("/api/custom/campaign/notification", async (req, res) => {
 app.get("/api/products", async (req, res) => {
     try {
         const products = await db.execute("SELECT * FROM products");
-        res.json({ success: true, products: products.rows });
+        const list = products.rows.map(p => {
+            let images = [];
+            if (p.images) {
+                try {
+                    images = typeof p.images === 'string' ? JSON.parse(p.images) : p.images;
+                } catch(e) {
+                    images = [p.images];
+                }
+            }
+            if (!Array.isArray(images) || images.length === 0) {
+                images = p.image_url ? [p.image_url] : [];
+            }
+            return {
+                ...p,
+                images,
+                image_url: p.image_url || images[0] || ''
+            };
+        });
+        res.json({ success: true, products: list });
     } catch (e) {
         console.error("Fetch products error:", e);
         res.status(500).json({ error: "Failed to fetch products" });
@@ -188,13 +259,18 @@ app.get("/api/products", async (req, res) => {
 
 app.post("/api/products", async (req, res) => {
     try {
-        const { name, category_id, price, quantity, description, imageUrl, available_stock, password } = req.body;
+        const { name, category_id, price, quantity, description, imageUrl, images, available_stock, password } = req.body;
         if (password !== "52345234") return res.status(401).json({ error: "Unauthorized" });
 
         const id = 'p' + Math.random().toString(36).substr(2, 9);
+        let imagesArray = Array.isArray(images) ? images : (images ? [images] : []);
+        if (imagesArray.length === 0 && imageUrl) imagesArray = [imageUrl];
+        const primaryImage = imageUrl || imagesArray[0] || '';
+        const imagesJson = JSON.stringify(imagesArray);
+
         await db.execute({
-            sql: `INSERT INTO products (id, name, category_id, price, quantity, description, image_url, image_base64, available_stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            args: [id, name, category_id || 'general', price, quantity, description, imageUrl, '', available_stock !== undefined ? available_stock : 100]
+            sql: `INSERT INTO products (id, name, category_id, price, quantity, description, image_url, image_base64, available_stock, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            args: [id, name, category_id || 'general', price, quantity, description, primaryImage, '', available_stock !== undefined ? available_stock : 100, imagesJson]
         });
 
         res.json({ success: true, productId: id });
@@ -206,12 +282,17 @@ app.post("/api/products", async (req, res) => {
 
 app.put("/api/products/:id", async (req, res) => {
     try {
-        const { name, category_id, price, quantity, description, imageUrl, available_stock, password } = req.body;
+        const { name, category_id, price, quantity, description, imageUrl, images, available_stock, password } = req.body;
         if (password !== "52345234") return res.status(401).json({ error: "Unauthorized" });
 
+        let imagesArray = Array.isArray(images) ? images : (images ? [images] : []);
+        if (imagesArray.length === 0 && imageUrl) imagesArray = [imageUrl];
+        const primaryImage = imageUrl || imagesArray[0] || '';
+        const imagesJson = JSON.stringify(imagesArray);
+
         await db.execute({
-            sql: `UPDATE products SET name = ?, category_id = ?, price = ?, quantity = ?, description = ?, image_url = ?, available_stock = ? WHERE id = ?`,
-            args: [name, category_id || 'general', price, quantity, description, imageUrl, available_stock !== undefined ? available_stock : 100, req.params.id]
+            sql: `UPDATE products SET name = ?, category_id = ?, price = ?, quantity = ?, description = ?, image_url = ?, available_stock = ?, images = ? WHERE id = ?`,
+            args: [name, category_id || 'general', price, quantity, description, primaryImage, available_stock !== undefined ? available_stock : 100, imagesJson, req.params.id]
         });
         res.json({ success: true });
     } catch (e) {
@@ -388,21 +469,34 @@ app.post("/api/custom/order", async (req, res) => {
         if (hasPlan) {
             try {
                 const subId = 'sub_' + Math.random().toString(36).substring(2, 9);
-                const planItem = items.find(i => i.productId && i.productId.startsWith('plan_')) || items[0];
+                const planItem = items.find(i => i.productId && (i.productId.startsWith('plan_') || i.productId.startsWith('custom_'))) || items[0];
                 const isHalf = planItem.productId && planItem.productId.includes('half');
                 const isCow = planItem.productId && planItem.productId.includes('cow');
-                const planName = planItem.productName || (isCow ? 'Pure Cow Milk Plan' : 'Pure Buffalo Milk Plan');
-                const dailyQty = isHalf ? '500 ml' : '1 Liter';
-                const rate = isHalf ? (isCow ? 28 : 33) : (isCow ? 56 : 66);
-                const startStr = new Date().toISOString().split('T')[0];
-                const end = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                
+                let planName = planItem.productName || (isCow ? 'Pure Cow Milk Plan' : 'Pure Buffalo Milk Plan');
+                let dailyQty = isHalf ? '500 ml' : '1 Liter';
+                let rate = isHalf ? (isCow ? 28 : 33) : (isCow ? 56 : 66);
+                let totalDays = 30;
+                let startStr = new Date().toISOString().split('T')[0];
+
+                if (planItem.customDetails) {
+                    dailyQty = planItem.customDetails.dailyQuantity || dailyQty;
+                    rate = Number(planItem.customDetails.ratePerUnit) || rate;
+                    totalDays = Number(planItem.customDetails.totalDays) || 30;
+                    if (planItem.customDetails.startDate) {
+                        startStr = planItem.customDetails.startDate;
+                    }
+                }
+
+                const startDateObj = new Date(startStr);
+                const end = new Date(startDateObj.getTime() + totalDays * 24 * 60 * 60 * 1000);
                 const endStr = end.toISOString().split('T')[0];
 
                 await db.execute({
                     sql: `INSERT INTO user_subscriptions 
                           (id, userId, planId, planName, dailyQuantity, ratePerUnit, totalDays, startDate, endDate, totalAmount, paymentStatus, status, nextDayPaused, createdAt) 
-                          VALUES (?, ?, ?, ?, ?, ?, 30, ?, ?, ?, 'PENDING_AT_DOORSTEP', 'ACTIVE', 0, ?)`,
-                    args: [subId, userId, planItem.productId || 'plan_cow', planName, dailyQty, rate, startStr, endStr, totalAmount, Date.now()]
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_AT_DOORSTEP', 'ACTIVE', 0, ?)`,
+                    args: [subId, userId, planItem.productId || 'plan_cow', planName, dailyQty, rate, totalDays, startStr, endStr, totalAmount, Date.now()]
                 });
 
                 await db.execute({
@@ -414,32 +508,73 @@ app.post("/api/custom/order", async (req, res) => {
             }
         }
 
-        // Send WhatsApp confirmation if user has phoneNumber
-        if (userPhone) {
+        // WhatsApp Dispatch: Send confirmation to Customer & detailed alert to Owner
+        (async () => {
             try {
-                const cleanNumber = userPhone.replace(/\D/g, '');
-                const num = cleanNumber.length === 10 ? '91' + cleanNumber : cleanNumber;
-                const chatId = `${num}@c.us`;
+                // Fetch customer details
+                const custRes = await db.execute({
+                    sql: "SELECT name, phoneNumber, email FROM user WHERE id = ?",
+                    args: [userId]
+                });
+                const customerName = custRes.rows[0]?.name || "Customer";
+                const customerPhone = userPhone || custRes.rows[0]?.phoneNumber;
+                const customerEmail = custRes.rows[0]?.email || email;
 
-                let msg = '';
-                if (hasPlan) {
-                    msg = `🥛 *Milkman Dairy - Plan Booked Successfully!* 🎉\n\n` +
-                        `Dear Customer, your subscription *${planTitles.join(', ') || 'Milk Subscription Plan'}* has been *Successfully Booked*!\n\n` +
-                        `📌 Order ID: *#${orderId}*\n` +
-                        `💰 Total Amount: *₹${totalAmount}*\n` +
-                        `📍 Address: *${houseNo ? houseNo + ', ' : ''}${deliveryArea || ''}*\n\n` +
-                        `🛵 *Our agent will come to your location for confirmation and payment.*\n\n` +
-                        `Thank you for choosing Milkman! 🐄`;
-                } else {
-                    msg = `🥛 *Milkman Dairy - Order Placed* 📦\n\n` +
-                        `Your order *#${orderId}* of *₹${totalAmount}* has been placed successfully!\n\n` +
-                        `We will deliver it to your address shortly. Thank you!`;
+                const fullAddress = `${houseNo ? houseNo + ', ' : ''}${deliveryArea || ''}${landmark ? ' (Landmark: ' + landmark + ')' : ''}`;
+                const estDeliveryStr = new Date(estimatedDelivery).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: 'numeric', hour12: true, day: 'numeric', month: 'short' });
+                const orderTimeStr = new Date(createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+                // Build itemized list string
+                const itemsListText = items.map((i, idx) => {
+                    const q = Number(i.quantity || i.qty || 1);
+                    const p = Number(i.price || 0);
+                    return `${idx + 1}. *${i.productName || 'Dairy Product'}* x ${q} = ₹${p * q}`;
+                }).join('\n');
+
+                // 1. Send confirmation to Customer
+                if (customerPhone) {
+                    let customerMsg = '';
+                    if (hasPlan) {
+                        customerMsg = `🥛 *Milkman Dairy - Plan Booked Successfully!* 🎉\n\n` +
+                            `Hello *${customerName}*,\n` +
+                            `Your subscription *${planTitles.join(', ') || 'Milk Subscription Plan'}* has been *Successfully Booked*!\n\n` +
+                            `📌 *Order ID:* #${orderId}\n` +
+                            `💰 *Total Amount:* ₹${totalAmount}\n` +
+                            `📍 *Address:* ${fullAddress || 'Address on record'}\n` +
+                            `🛵 *Payment & Verification:* Our agent will visit your doorstep.\n\n` +
+                            `Thank you for choosing pure, fresh dairy from Milkman! 🐄`;
+                    } else {
+                        customerMsg = `🥛 *Milkman Dairy - Order Confirmed!* 📦\n\n` +
+                            `Hello *${customerName}*,\n` +
+                            `Your order *#${orderId}* has been placed successfully!\n\n` +
+                            `📋 *Items Ordered:*\n${itemsListText}\n\n` +
+                            `💰 *Total Amount:* ₹${totalAmount}\n` +
+                            `📍 *Deliver to:* ${fullAddress || 'Saved Address'}\n` +
+                            `🕒 *Est. Delivery:* ${estDeliveryStr}\n\n` +
+                            `Our delivery partner will reach you shortly. Thank you! 🙏`;
+                    }
+                    await sendWhatsAppNotification(customerPhone, customerMsg);
                 }
-                sendWhatsAppMessage(chatId, msg).catch(e => console.log('WhatsApp send notice:', e.message));
-            } catch (err) {
-                console.error("WhatsApp notification dispatch error:", err);
+
+                // 2. Send Detailed Alert to Owner (7696880795)
+                const ownerAlertMsg = `🚨 *Milkman Admin Alert: NAYA ORDER AAYA HAI!* 🛒\n\n` +
+                    `*Order ID:* #${orderId}\n` +
+                    `*Customer:* ${customerName}\n` +
+                    `*Phone:* ${customerPhone || 'Not provided'}\n` +
+                    `*Email:* ${customerEmail}\n` +
+                    `*Delivery Address:* ${fullAddress || 'Saved Address'}\n` +
+                    `*Order Type:* ${hasPlan ? '📅 Subscription Plan' : '⚡ Instant / Regular Order'}\n\n` +
+                    `*Items List:*\n${itemsListText}\n\n` +
+                    `*Total Amount:* ₹${totalAmount}\n` +
+                    `*Payment Mode:* COD / Doorstep\n` +
+                    `*Est. Delivery:* ${estDeliveryStr}\n` +
+                    `*Order Time:* ${orderTimeStr}`;
+
+                await sendOwnerAlert(ownerAlertMsg);
+            } catch (notifyErr) {
+                console.error("Order WhatsApp notification error:", notifyErr.message);
             }
-        }
+        })();
 
         res.json({ success: true, orderId, totalAmount, hasPlan });
     } catch (e) {
@@ -512,6 +647,60 @@ app.post("/api/orders/update-status", async (req, res) => {
         args.push(orderId);
 
         await db.execute({ sql: query, args });
+
+        // Dispatch WhatsApp notification to customer based on status
+        (async () => {
+            try {
+                const ordRes = await db.execute({
+                    sql: `SELECT o.id, o.totalAmount, u.name, u.phoneNumber, u.email 
+                          FROM "order" o 
+                          LEFT JOIN user u ON o.userId = u.id 
+                          WHERE o.id = ?`,
+                    args: [orderId]
+                });
+
+                if (ordRes.rows.length > 0) {
+                    const row = ordRes.rows[0];
+                    const customerName = row.name || "Customer";
+                    const customerPhone = row.phoneNumber;
+
+                    let statusMsg = '';
+                    const normStatus = String(status).toUpperCase();
+
+                    if (normStatus === 'ACCEPTED' || normStatus === 'PROCESSING') {
+                        statusMsg = `🥛 *Milkman Dairy - Order Accepted!* ✅\n\n` +
+                            `Hello *${customerName}*,\n` +
+                            `Great news! Your order *#${orderId}* has been *ACCEPTED* by our dairy team. 🐄\n` +
+                            `Fresh milk and dairy products are being carefully prepared and packed from our farm.\n\n` +
+                            `Thank you for choosing pure health! 🙏`;
+                    } else if (normStatus === 'OUT_FOR_DELIVERY') {
+                        statusMsg = `🚚 *Milkman Dairy - Out For Delivery!* 🛵\n\n` +
+                            `Hello *${customerName}*,\n` +
+                            `Your order *#${orderId}* is *OUT FOR DELIVERY*! Our delivery partner is on the way to your doorstep.\n` +
+                            `Please keep *₹${row.totalAmount}* ready if payment is Cash on Delivery.\n\n` +
+                            `Pure & farm fresh goodness is reaching you shortly! 🥛`;
+                    } else if (normStatus === 'DELIVERED') {
+                        statusMsg = `🎉 *Milkman Dairy - Order Delivered!* ✨\n\n` +
+                            `Hello *${customerName}*,\n` +
+                            `Your order *#${orderId}* has been *SUCCESSFULLY DELIVERED*! 🥛\n` +
+                            `We hope you enjoy the pure taste of farm-fresh dairy. Please share your feedback or reach out whenever you need fresh milk.\n\n` +
+                            `Thank you for being a part of the Milkman family! 🐄❤️`;
+                    } else if (normStatus === 'CANCELLED') {
+                        statusMsg = `❌ *Milkman Dairy - Order Cancelled*\n\n` +
+                            `Hello *${customerName}*,\n` +
+                            `Your order *#${orderId}* has been marked as *CANCELLED* by staff.\n` +
+                            `If you have questions or this was done in error, please contact our support at 7696880795.`;
+                    }
+
+                    if (statusMsg && customerPhone) {
+                        await sendWhatsAppNotification(customerPhone, statusMsg);
+                    }
+                }
+            } catch (notifyErr) {
+                console.error("Status update WhatsApp error:", notifyErr.message);
+            }
+        })();
+
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: "Failed" });
@@ -552,12 +741,13 @@ app.post("/api/orders/user-cancel", async (req, res) => {
         const { email, orderId } = req.body;
         if (!email || !orderId) return res.status(400).json({ error: "Missing fields" });
 
-        const userRes = await db.execute({ sql: "SELECT id FROM user WHERE email = ?", args: [email] });
+        const userRes = await db.execute({ sql: "SELECT id, name, phoneNumber FROM user WHERE email = ?", args: [email] });
         if (userRes.rows.length === 0) return res.status(404).json({ error: "User not found" });
-        const userId = userRes.rows[0].id;
+        const userRow = userRes.rows[0];
+        const userId = userRow.id;
 
         // Verify order belongs to user and is PENDING
-        const orderRes = await db.execute({ sql: "SELECT status FROM \"order\" WHERE id = ? AND userId = ?", args: [orderId, userId] });
+        const orderRes = await db.execute({ sql: "SELECT status, totalAmount FROM \"order\" WHERE id = ? AND userId = ?", args: [orderId, userId] });
         if (orderRes.rows.length === 0) return res.status(404).json({ error: "Order not found" });
 
         if (orderRes.rows[0].status !== 'PENDING') {
@@ -565,6 +755,37 @@ app.post("/api/orders/user-cancel", async (req, res) => {
         }
 
         await db.execute({ sql: "UPDATE \"order\" SET status = 'CANCELLED' WHERE id = ?", args: [orderId] });
+
+        // WhatsApp Notification on Order Cancellation
+        (async () => {
+            try {
+                const customerName = userRow.name || "Customer";
+                const customerPhone = userRow.phoneNumber;
+                const cancelTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+                // 1. Notify Customer
+                if (customerPhone) {
+                    const cancelMsg = `❌ *Milkman Dairy - Order Cancelled*\n\n` +
+                        `Hello *${customerName}*,\n` +
+                        `Your order *#${orderId}* has been successfully cancelled as requested.\n\n` +
+                        `We hope to serve you fresh milk and dairy soon! 🥛🐄`;
+                    await sendWhatsAppNotification(customerPhone, cancelMsg);
+                }
+
+                // 2. Alert Owner (7696880795)
+                const ownerCancelAlert = `⚠️ *Milkman Admin Alert: Order Cancelled by User*\n\n` +
+                    `*Order ID:* #${orderId}\n` +
+                    `*Customer:* ${customerName}\n` +
+                    `*Phone:* ${customerPhone || 'Not provided'}\n` +
+                    `*Email:* ${email}\n` +
+                    `*Total Amount:* ₹${orderRes.rows[0].totalAmount}\n` +
+                    `*Time:* ${cancelTime}`;
+                await sendOwnerAlert(ownerCancelAlert);
+            } catch (notifyErr) {
+                console.error("Cancel WhatsApp notification error:", notifyErr.message);
+            }
+        })();
+
         res.json({ success: true });
     } catch (e) {
         console.error("User cancel error:", e);
@@ -578,7 +799,7 @@ app.post("/api/orders/user-cancel", async (req, res) => {
 app.get("/api/users", async (req, res) => {
     try {
         if (req.query.password !== "52345234") return res.status(401).json({ error: "Unauthorized" });
-        const users = await db.execute("SELECT id, name, phoneNumber, createdAt, status, lastLoginAt FROM user ORDER BY createdAt DESC");
+        const users = await db.execute("SELECT id, name, phoneNumber, email, deliveryArea, houseNo, landmark, isSubscribed, createdAt, status, lastLoginAt FROM user ORDER BY createdAt DESC");
         res.json({ success: true, users: users.rows });
     } catch (e) {
         res.status(500).json({ error: "Failed" });
@@ -701,15 +922,23 @@ app.get("/api/subscription/my-status", async (req, res) => {
         tomorrow.setDate(tomorrow.getDate() + 1);
         const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
-        const formattedSubs = [];
-        for (const sub of subsRes.rows) {
-            // Fetch all delivery records for this subscription
-            const delRes = await db.execute({
-                sql: "SELECT * FROM subscription_deliveries WHERE subscriptionId = ? ORDER BY deliveryDate ASC",
-                args: [sub.id]
-            });
+        const subIds = subsRes.rows.map(s => s.id);
+        const placeholders = subIds.map(() => '?').join(',');
 
-            const deliveries = delRes.rows.map(d => ({
+        const delRes = await db.execute({
+            sql: `SELECT * FROM subscription_deliveries WHERE subscriptionId IN (${placeholders}) ORDER BY deliveryDate ASC`,
+            args: subIds
+        });
+
+        const delMap = new Map();
+        for (const d of delRes.rows) {
+            if (!delMap.has(d.subscriptionId)) delMap.set(d.subscriptionId, []);
+            delMap.get(d.subscriptionId).push(d);
+        }
+
+        const formattedSubs = subsRes.rows.map(sub => {
+            const rawDeliveries = delMap.get(sub.id) || [];
+            const deliveries = rawDeliveries.map(d => ({
                 ...d,
                 quantityDelivered: d.quantityDelivered || sub.dailyQuantity || '1L',
                 deliveryTime: d.deliveryTime || (d.markedAt ? new Date(d.markedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : '06:45 AM')
@@ -717,11 +946,10 @@ app.get("/api/subscription/my-status", async (req, res) => {
             const deliveredCount = deliveries.filter(d => d.status === 'DELIVERED').length;
             const remainingDays = Math.max(0, (sub.totalDays || 30) - deliveredCount);
 
-            // Check if tomorrow is paused
             const tomorrowDelivery = deliveries.find(d => d.deliveryDate === tomorrowStr);
             const isTomorrowPaused = (tomorrowDelivery && tomorrowDelivery.status === 'SKIPPED_BY_USER') || !!sub.nextDayPaused;
 
-            formattedSubs.push({
+            return {
                 ...sub,
                 userName: userData ? userData.name : undefined,
                 phoneNumber: userData ? userData.phoneNumber : undefined,
@@ -733,8 +961,8 @@ app.get("/api/subscription/my-status", async (req, res) => {
                 nextDayPaused: isTomorrowPaused,
                 tomorrowDate: tomorrowStr,
                 deliveries: deliveries
-            });
-        }
+            };
+        });
 
         res.json({
             success: true,
@@ -835,24 +1063,38 @@ app.get("/api/staff/subscribers", async (req, res) => {
             ORDER BY s.createdAt DESC
         `);
 
-        // Attach delivery count & status for the requested date
-        const results = [];
-        for (const sub of subsRes.rows) {
-            const delRes = await db.execute({
-                sql: "SELECT deliveryDate, status FROM subscription_deliveries WHERE subscriptionId = ?",
-                args: [sub.id]
-            });
-            const deliveredCount = delRes.rows.filter(d => d.status === 'DELIVERED').length;
-            const remainingDays = Math.max(0, (sub.totalDays || 30) - deliveredCount);
-            const dateRecord = delRes.rows.find(d => d.deliveryDate === date);
+        // Attach delivery count & status using single batch query (O(1) roundtrips, no N+1)
+        if (subsRes.rows.length === 0) {
+            return res.json({ success: true, subscribers: [], date });
+        }
 
-            results.push({
+        const subIds = subsRes.rows.map(s => s.id);
+        const placeholders = subIds.map(() => '?').join(',');
+
+        const delRes = await db.execute({
+            sql: `SELECT subscriptionId, deliveryDate, status FROM subscription_deliveries WHERE subscriptionId IN (${placeholders})`,
+            args: subIds
+        });
+
+        const delMap = new Map();
+        for (const d of delRes.rows) {
+            if (!delMap.has(d.subscriptionId)) delMap.set(d.subscriptionId, []);
+            delMap.get(d.subscriptionId).push(d);
+        }
+
+        const results = subsRes.rows.map(sub => {
+            const deliveries = delMap.get(sub.id) || [];
+            const deliveredCount = deliveries.filter(d => d.status === 'DELIVERED').length;
+            const remainingDays = Math.max(0, (sub.totalDays || 30) - deliveredCount);
+            const dateRecord = deliveries.find(d => d.deliveryDate === date);
+
+            return {
                 ...sub,
                 deliveredDays: deliveredCount,
                 remainingDays: remainingDays,
                 dateStatus: dateRecord ? dateRecord.status : 'PENDING'
-            });
-        }
+            };
+        });
 
         res.json({ success: true, subscribers: results, date });
     } catch (e) {
@@ -866,7 +1108,7 @@ app.post("/api/staff/subscribers/add", async (req, res) => {
     try {
         const {
             password, name, phoneNumber, planId, planName, dailyQuantity,
-            ratePerUnit, totalAmount, paymentStatus, startDate, deliveryArea, houseNo
+            ratePerUnit, totalAmount, totalDays, paymentStatus, startDate, deliveryArea, houseNo, userId: explicitUserId
         } = req.body;
 
         if (password !== "52345234") return res.status(401).json({ error: "Unauthorized" });
@@ -877,33 +1119,41 @@ app.post("/api/staff/subscribers/add", async (req, res) => {
         const without91 = cleanPhone.length === 12 && cleanPhone.startsWith('91') ? cleanPhone.slice(2) : cleanPhone;
 
         // Find or create user
-        let userRes = await db.execute({
-            sql: "SELECT id FROM user WHERE phoneNumber = ? OR phoneNumber = ? LIMIT 1",
-            args: [with91, without91]
-        });
-
-        let userId = '';
-        if (userRes.rows.length > 0) {
-            userId = userRes.rows[0].id;
+        let userId = explicitUserId || '';
+        if (userId) {
             await db.execute({
                 sql: "UPDATE user SET isSubscribed = 1, deliveryArea = COALESCE(?, deliveryArea), houseNo = COALESCE(?, houseNo) WHERE id = ?",
                 args: [deliveryArea || null, houseNo || null, userId]
             });
         } else {
-            userId = 'u_' + Math.random().toString(36).substring(2, 9);
-            const email = `${with91}@milkman.local`;
-            const devToken = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-            await db.execute({
-                sql: `INSERT INTO user (id, name, email, phoneNumber, emailVerified, phoneNumberVerified, deliveryArea, houseNo, isSubscribed, deviceToken, createdAt, updatedAt) 
-                      VALUES (?, ?, ?, ?, 1, 1, ?, ?, 1, ?, ?, ?)`,
-                args: [userId, name, email, with91, deliveryArea || null, houseNo || null, devToken, Date.now(), Date.now()]
+            let userRes = await db.execute({
+                sql: "SELECT id FROM user WHERE phoneNumber = ? OR phoneNumber = ? LIMIT 1",
+                args: [with91, without91]
             });
+
+            if (userRes.rows.length > 0) {
+                userId = userRes.rows[0].id;
+                await db.execute({
+                    sql: "UPDATE user SET isSubscribed = 1, deliveryArea = COALESCE(?, deliveryArea), houseNo = COALESCE(?, houseNo) WHERE id = ?",
+                    args: [deliveryArea || null, houseNo || null, userId]
+                });
+            } else {
+                userId = 'u_' + Math.random().toString(36).substring(2, 9);
+                const email = `${with91}@milkman.local`;
+                const devToken = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+                await db.execute({
+                    sql: `INSERT INTO user (id, name, email, phoneNumber, emailVerified, phoneNumberVerified, deliveryArea, houseNo, isSubscribed, deviceToken, createdAt, updatedAt) 
+                          VALUES (?, ?, ?, ?, 1, 1, ?, ?, 1, ?, ?, ?)`,
+                    args: [userId, name, email, with91, deliveryArea || null, houseNo || null, devToken, Date.now(), Date.now()]
+                });
+            }
         }
 
-        // Calculate end date (startDate + 30 days)
+        // Calculate end date (startDate + totalDays)
+        const days = parseInt(totalDays) || 30;
         const start = startDate ? new Date(startDate) : new Date();
         const startStr = start.toISOString().split('T')[0];
-        const end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
         const endStr = end.toISOString().split('T')[0];
 
         const subId = 'sub_' + Math.random().toString(36).substring(2, 9);
@@ -911,13 +1161,29 @@ app.post("/api/staff/subscribers/add", async (req, res) => {
         await db.execute({
             sql: `INSERT INTO user_subscriptions 
                   (id, userId, planId, planName, dailyQuantity, ratePerUnit, totalDays, startDate, endDate, totalAmount, paymentStatus, status, nextDayPaused, createdAt) 
-                  VALUES (?, ?, ?, ?, ?, ?, 30, ?, ?, ?, ?, 'ACTIVE', 0, ?)`,
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 0, ?)`,
             args: [
                 subId, userId, planId, planName || 'Milk Plan', dailyQuantity || '1 Liter',
-                ratePerUnit || 56, startStr, endStr, totalAmount || 1699,
+                ratePerUnit || 56, days, startStr, endStr, totalAmount || 1699,
                 paymentStatus || 'PENDING_AT_DOORSTEP', Date.now()
             ]
         });
+
+        // Send WhatsApp confirmation
+        if (cleanPhone) {
+            try {
+                const chatId = `${with91}@c.us`;
+                const msg = `🥛 *Milkman Dairy - Subscription Activated!* 🎉\n\n` +
+                    `Namaste *${name}*, aapka subscription start kar diya gaya hai!\n\n` +
+                    `📋 Plan: *${planName || 'Daily Milk Plan'}*\n` +
+                    `🥛 Daily Quantity: *${dailyQuantity || '1L'}*\n` +
+                    `📅 Duration: *${days} Days* (Starts: *${startStr}*)\n` +
+                    `💰 Total Amount: *₹${totalAmount || 0}* (${paymentStatus === 'PREPAID' ? 'Pre-Paid' : 'Pay at Doorstep'})\n` +
+                    `📍 Delivery Address: *${houseNo ? houseNo + ', ' : ''}${deliveryArea || ''}*\n\n` +
+                    `Pure & fresh farm milk will reach your doorstep every morning. Thank you! 🐄✨`;
+                sendWhatsAppMessage(chatId, msg).catch(e => console.log('WA notice:', e.message));
+            } catch (err) {}
+        }
 
         res.json({ success: true, subscriptionId: subId, userId });
     } catch (e) {
@@ -965,7 +1231,14 @@ app.post("/api/staff/delivery/mark", async (req, res) => {
             });
         }
 
-        res.json({ success: true, quantityDelivered: finalQty, deliveryTime: resolvedTime });
+        res.json({
+            success: true,
+            subscriptionId,
+            deliveryDate,
+            status,
+            quantityDelivered: finalQty,
+            deliveryTime: resolvedTime
+        });
     } catch (e) {
         console.error("Mark delivery error:", e);
         res.status(500).json({ error: "Failed to mark delivery" });

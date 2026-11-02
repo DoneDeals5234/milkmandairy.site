@@ -2037,6 +2037,8 @@
         </div>
     </div>
 
+    <!-- QUERY CLIENT (TanStack Query SWR & Selective Caching) -->
+    <script src="js/query-client.js"></script>
     <!-- MAIN APP SCRIPT -->
     <script src="js/main.js"></script>
     <script>
@@ -2149,20 +2151,13 @@
             await loadMySubscription();
         }
 
-        async function loadMySubscription() {
-            subLoadingView.style.display = 'block';
-            emptySubView.style.display = 'none';
-            activeSubView.style.display = 'none';
+        async function loadMySubscription(forceRefresh = false) {
+            const phone = currentUser ? (currentUser.phone || '') : '';
+            const userId = currentUser ? (currentUser.id || '') : '';
+            const cacheKey = `my_sub_${phone}_${userId}`;
 
-            try {
-                const phone = currentUser.phone || '';
-                const userId = currentUser.id || '';
-                const res = await fetch(`${API_BASE}/api/subscription/my-status?phone=${encodeURIComponent(phone)}&userId=${encodeURIComponent(userId)}`);
-                const data = await res.json();
-
-                subLoadingView.style.display = 'none';
-
-                if (data.success && data.hasSubscription) {
+            const applySubData = (data) => {
+                if (data && data.success && data.hasSubscription) {
                     allSubscriptions = data.subscriptions && data.subscriptions.length > 0
                         ? data.subscriptions
                         : (data.subscription ? [data.subscription] : []);
@@ -2178,17 +2173,62 @@
                         const previousSubs = allSubscriptions.filter((_, idx) => idx !== activeSubscriptionIndex);
                         renderPreviousSubscriptions(previousSubs);
 
+                        subLoadingView.style.display = 'none';
+                        emptySubView.style.display = 'none';
                         activeSubView.style.display = 'block';
                     } else {
+                        subLoadingView.style.display = 'none';
+                        activeSubView.style.display = 'none';
                         emptySubView.style.display = 'block';
                     }
                 } else {
+                    subLoadingView.style.display = 'none';
+                    activeSubView.style.display = 'none';
                     emptySubView.style.display = 'block';
                 }
+            };
+
+            // TanStack Query Pattern: Check if cached data exists
+            const cached = window.queryClient ? window.queryClient.getQueryData(cacheKey) : null;
+            if (cached) {
+                // Instantly display cached subscription - ZERO loading flash!
+                applySubData(cached);
+            } else {
+                // Cold start: show loader only on first visit
+                subLoadingView.style.display = 'block';
+                emptySubView.style.display = 'none';
+                activeSubView.style.display = 'none';
+            }
+
+            try {
+                const fetchFn = async () => {
+                    const res = await fetch(`${API_BASE}/api/subscription/my-status?phone=${encodeURIComponent(phone)}&userId=${encodeURIComponent(userId)}`);
+                    return await res.json();
+                };
+
+                let data;
+                if (window.queryClient) {
+                    if (forceRefresh) {
+                        window.queryClient.invalidateQueries(cacheKey);
+                    }
+                    data = await window.queryClient.fetchQuery(cacheKey, fetchFn, {
+                        staleTime: 30000,
+                        backgroundRevalidate: true,
+                        onBackgroundUpdate: (freshData) => {
+                            applySubData(freshData);
+                        }
+                    });
+                } else {
+                    data = await fetchFn();
+                }
+
+                applySubData(data);
             } catch (e) {
                 console.error("Subscription load error:", e);
-                subLoadingView.style.display = 'none';
-                emptySubView.style.display = 'block';
+                if (!cached) {
+                    subLoadingView.style.display = 'none';
+                    emptySubView.style.display = 'block';
+                }
             }
         }
 
@@ -2703,7 +2743,7 @@
             }).join('');
         }
 
-        // Handle Stop / Resume Tomorrow Delivery for ANY subscription
+        // Handle Stop / Resume Tomorrow Delivery for ANY subscription (Optimistic Update)
         window.toggleSingleSubPause = async function (subId) {
             const sub = allSubscriptions.find(s => s.id === subId);
             if (!sub) return;
@@ -2722,6 +2762,28 @@
             );
             if (!confirmed) return;
 
+            // 1. OPTIMISTIC UPDATE: 0ms Perceived Latency (no full-page loading screen!)
+            sub.nextDayPaused = !isCurrentlyPaused;
+            renderSubscriptionView(activeSubscription);
+            renderSubTabs(activeSubscriptionIndex);
+            const otherSubs = allSubscriptions.filter((_, idx) => idx !== activeSubscriptionIndex);
+            renderPreviousSubscriptions(otherSubs);
+
+            const phone = currentUser ? (currentUser.phone || '') : '';
+            const userId = currentUser ? (currentUser.id || '') : '';
+            const cacheKey = `my_sub_${phone}_${userId}`;
+            if (window.queryClient) {
+                window.queryClient.setQueryData(cacheKey, {
+                    success: true,
+                    hasSubscription: true,
+                    subscriptions: allSubscriptions,
+                    subscription: activeSubscription
+                });
+            }
+
+            showDayToast(1, 'Tomorrow', sub.nextDayPaused ? 'Paused ⏸ (Delivery will skip)' : 'Resumed ▶ (Delivery scheduled)');
+
+            // 2. BACKGROUND MUTATION
             try {
                 const res = await fetch(`${API_BASE}/api/subscription/toggle-pause`, {
                     method: 'POST',
@@ -2735,13 +2797,24 @@
 
                 const data = await res.json();
                 if (data.success) {
-                    await customAlert("Schedule Updated", data.message || "Your delivery preference has been recorded.");
-                    await loadMySubscription();
+                    if (window.queryClient) {
+                        window.queryClient.invalidateQueries(cacheKey);
+                    }
                 } else {
+                    // ROLLBACK on server validation error (e.g. cut-off time passed)
+                    sub.nextDayPaused = isCurrentlyPaused;
+                    renderSubscriptionView(activeSubscription);
+                    renderSubTabs(activeSubscriptionIndex);
+                    renderPreviousSubscriptions(otherSubs);
                     await customAlert("Cut-off Time Passed", data.error || "Failed to update delivery preference");
                 }
             } catch (e) {
-                await customAlert("Error", "Network connection failed. Please try again.");
+                // ROLLBACK on network failure
+                sub.nextDayPaused = isCurrentlyPaused;
+                renderSubscriptionView(activeSubscription);
+                renderSubTabs(activeSubscriptionIndex);
+                renderPreviousSubscriptions(otherSubs);
+                await customAlert("Error", "Network connection failed. Reverted your change.");
             }
         };
 

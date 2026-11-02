@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (item.productId === 'promo_shobha' || (item.productName && item.productName.toLowerCase().includes('toilet cleaner'))) {
             return 'assets/shobha_toilet_cleaner.png';
         }
-        if (item.productId === 'plan_cow' || item.productId === 'plan_cow_half') return 'assets/cow_milk_plan.jpg';
-        if (item.productId === 'plan_buffalo' || item.productId === 'plan_buffalo_half') return 'assets/buffalo_milk_plan.png';
+        if (item.productId === 'plan_cow' || item.productId === 'plan_cow_half' || (item.productId && item.productId.includes('cow')) || (item.productName && item.productName.toLowerCase().includes('cow'))) return 'assets/cow_milk_plan.jpg';
+        if (item.productId === 'plan_buffalo' || item.productId === 'plan_buffalo_half' || (item.productId && item.productId.includes('buffalo')) || (item.productName && item.productName.toLowerCase().includes('buffalo'))) return 'assets/buffalo_milk_plan.png';
         if (item.imageUrl && !item.imageUrl.includes('shobha_banner')) return item.imageUrl;
         return 'assets/logo.png';
     }

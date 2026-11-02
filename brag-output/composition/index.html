@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Milkman Launch - Brag Video</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --bg-dark: #070D18;
+        --emerald-primary: #00E676;
+        --emerald-deep: #00A854;
+        --gold-accent: #FFD200;
+        --gold-deep: #F59E0B;
+        --text-pure: #FFFFFF;
+        --text-sub: #94A3B8;
+        --glass-bg: rgba(15, 23, 42, 0.75);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg-dark);
+        font-family: var(--font-main);
+        color: var(--text-pure);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: radial-gradient(120% 100% at 50% 0%, #0d281e 0%, #070d18 60%, #030712 100%);
+      }
+
+      /* Shared clip styles */
+      .clip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+
+      /* Ambient background lighting */
+      .ambient-glow-1 {
+        position: absolute;
+        width: 800px;
+        height: 800px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 230, 118, 0.18) 0%, rgba(0, 168, 84, 0.05) 50%, transparent 70%);
+        filter: blur(80px);
+        top: -150px;
+        left: 200px;
+        z-index: 1;
+      }
+
+      .ambient-glow-2 {
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.03) 50%, transparent 70%);
+        filter: blur(80px);
+        bottom: -100px;
+        right: 150px;
+        z-index: 1;
+      }
+
+      /* Badges & Pills */
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 24px;
+        border-radius: 100px;
+        background: rgba(0, 230, 118, 0.12);
+        border: 1px solid rgba(0, 230, 118, 0.35);
+        color: var(--emerald-primary);
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+        backdrop-filter: blur(12px);
+      }
+
+      .badge-gold-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 100px;
+        background: rgba(255, 210, 0, 0.15);
+        border: 1px solid rgba(255, 210, 0, 0.4);
+        color: var(--gold-accent);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+
+      /* SCENE 1 STYLES */
+      #scene-1 {
+        z-index: 10;
+      }
+
+      .scene1-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        width: 1600px;
+        gap: 80px;
+        align-items: center;
+      }
+
+      .hero-title {
+        font-size: 84px;
+        font-weight: 900;
+        line-height: 1.08;
+        letter-spacing: -2px;
+        margin-bottom: 24px;
+      }
+
+      .highlight-emerald {
+        background: linear-gradient(135deg, #00E676 0%, #10B981 50%, #34D399 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-sub {
+        font-size: 28px;
+        color: var(--text-sub);
+        line-height: 1.45;
+        font-weight: 400;
+        max-width: 760px;
+      }
+
+      .hero-card-wrap {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .hero-img-card {
+        width: 520px;
+        height: 600px;
+        border-radius: 36px;
+        overflow: hidden;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 230, 118, 0.25);
+        position: relative;
+      }
+
+      .hero-img-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .floating-stat-badge {
+        position: absolute;
+        bottom: -24px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(0, 230, 118, 0.4);
+        padding: 16px 28px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        backdrop-filter: blur(16px);
+      }
+
+      /* SCENE 2 STYLES */
+      #scene-2 {
+        z-index: 20;
+        flex-direction: column;
+      }
+
+      .scene-header {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+
+      .scene-heading {
+        font-size: 64px;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        margin-bottom: 12px;
+      }
+
+      .plans-container {
+        display: flex;
+        gap: 50px;
+        width: 1560px;
+        justify-content: center;
+      }
+
+      .plan-card {
+        flex: 1;
+        background: rgba(15, 23, 42, 0.85);
+        border: 2px solid rgba(255, 255, 255, 0.12);
+        border-radius: 32px;
+        padding: 40px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .plan-card.cow-card {
+        border-color: rgba(245, 158, 11, 0.35);
+        box-shadow: 0 30px 80px rgba(245, 158, 11, 0.15);
+      }
+
+      .plan-card.buffalo-card {
+        border-color: rgba(0, 230, 118, 0.35);
+        box-shadow: 0 30px 80px rgba(0, 230, 118, 0.15);
+      }
+
+      .plan-img-wrap {
+        width: 100%;
+        height: 250px;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        position: relative;
+      }
+
+      .plan-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .plan-title {
+        font-size: 38px;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+
+      .plan-desc {
+        font-size: 20px;
+        color: var(--text-sub);
+        line-height: 1.45;
+        margin-bottom: 24px;
+      }
+
+      .plan-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 30px;
+      }
+
+      .chip {
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 600;
+        color: #E2E8F0;
+      }
+
+      .plan-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .plan-price-num {
+        font-size: 48px;
+        font-weight: 900;
+        color: var(--emerald-primary);
+      }
+
+      .plan-price-unit {
+        font-size: 20px;
+        color: var(--text-sub);
+      }
+
+      .plan-badge-btn {
+        padding: 16px 32px;
+        border-radius: 16px;
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #00E676 0%, #00A854 100%);
+        color: #032212;
+      }
+
+      /* SCENE 3 STYLES */
+      #scene-3 {
+        z-index: 30;
+        flex-direction: column;
+      }
+
+      .trace-layout {
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+        width: 1560px;
+        gap: 70px;
+        align-items: center;
+      }
+
+      .trace-card {
+        background: rgba(15, 23, 42, 0.88);
+        border: 2px solid rgba(0, 230, 118, 0.35);
+        border-radius: 36px;
+        padding: 48px;
+        box-shadow: 0 40px 100px rgba(0, 230, 118, 0.15);
+        backdrop-filter: blur(24px);
+        position: relative;
+      }
+
+      .scan-laser {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #00E676, transparent);
+        box-shadow: 0 0 20px #00E676;
+        opacity: 0.9;
+      }
+
+      .metric-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        margin-bottom: 16px;
+      }
+
+      .metric-label {
+        font-size: 22px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .metric-val {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--emerald-primary);
+      }
+
+      /* SCENE 4 STYLES */
+      #scene-4 {
+        z-index: 40;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .outro-logo-wrap {
+        width: 160px;
+        height: 160px;
+        border-radius: 40px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 3px solid rgba(0, 230, 118, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+        box-shadow: 0 0 80px rgba(0, 230, 118, 0.3);
+      }
+
+      .outro-logo-wrap img {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+      }
+
+      .brand-title {
+        font-size: 96px;
+        font-weight: 900;
+        letter-spacing: -2px;
+        margin-bottom: 16px;
+      }
+
+      .outro-tagline {
+        font-size: 36px;
+        color: #CBD5E1;
+        font-weight: 400;
+        margin-bottom: 44px;
+      }
+
+      .cta-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 20px;
+        padding: 22px 50px;
+        border-radius: 100px;
+        background: linear-gradient(135deg, #00E676 0%, #00A854 100%);
+        color: #042414;
+        font-size: 32px;
+        font-weight: 800;
+        box-shadow: 0 20px 60px rgba(0, 230, 118, 0.4);
+      }
+
+      .cta-url {
+        margin-top: 24px;
+        font-size: 26px;
+        color: var(--emerald-primary);
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="18"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Background Ambient Elements -->
+      <div class="ambient-glow-1"></div>
+      <div class="ambient-glow-2"></div>
+
+      <!-- AUDIO TRACKS -->
+      <!-- BGM Track (Vol 1 Happy Beats) -->
+      <audio
+        id="bgm"
+        class="clip"
+        data-start="0"
+        data-duration="18"
+        data-track-index="0"
+        src="assets/music/track.mp3"
+      ></audio>
+
+      <!-- UI SFX Audio Clips -->
+      <audio
+        id="sfx-scene1"
+        class="clip"
+        data-start="0.6"
+        data-duration="0.5"
+        data-track-index="1"
+        data-volume="0.65"
+        src="assets/sfx/ui/switch1.ogg"
+      ></audio>
+
+      <audio
+        id="sfx-cow"
+        class="clip"
+        data-start="4.8"
+        data-duration="0.5"
+        data-track-index="1"
+        data-volume="0.75"
+        src="assets/sfx/ui/click1.ogg"
+      ></audio>
+
+      <audio
+        id="sfx-buffalo"
+        class="clip"
+        data-start="6.2"
+        data-duration="0.5"
+        data-track-index="1"
+        data-volume="0.75"
+        src="assets/sfx/ui/click2.ogg"
+      ></audio>
+
+      <audio
+        id="sfx-trace"
+        class="clip"
+        data-start="9.8"
+        data-duration="0.6"
+        data-track-index="1"
+        data-volume="0.8"
+        src="assets/sfx/interface/switch_001.ogg"
+      ></audio>
+
+      <audio
+        id="sfx-outro"
+        class="clip"
+        data-start="14.2"
+        data-duration="0.8"
+        data-track-index="1"
+        data-volume="0.85"
+        src="assets/sfx/interface/drop_001.ogg"
+      ></audio>
+
+      <!-- SCENE 1: The Morning Promise (0.0s - 4.5s) -->
+      <div id="scene-1" class="clip" data-start="0" data-duration="4.5">
+        <div class="scene1-grid">
+          <div class="hero-left">
+            <div id="s1-badge" class="badge-pill">
+              <span>🥛 Farm Fresh Pure Dairy</span>
+            </div>
+            <h1 id="s1-title" class="hero-title">
+              Farm Fresh Milk,<br>
+              <span class="highlight-emerald">Every Morning.</span>
+            </h1>
+            <p id="s1-sub" class="hero-sub">
+              Pure, organic dairy delivered straight to your doorstep before you even wake up. Zero preservatives, sanitized glass bottles.
+            </p>
+          </div>
+          <div class="hero-card-wrap">
+            <div id="s1-img-card" class="hero-img-card">
+              <img src="assets/images/delivery_woman.jpg" alt="Daily Milk Delivery">
+            </div>
+            <div id="s1-stat" class="floating-stat-badge">
+              <span style="font-size: 32px;">🛵</span>
+              <div>
+                <div style="font-size: 16px; color: var(--emerald-primary); font-weight: 700; text-transform: uppercase;">Guaranteed Drop</div>
+                <div style="font-size: 22px; font-weight: 800; color: #FFF;">At Your Door By 5:30 AM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 2: The Vedic Milk Plans (4.5s - 9.5s) -->
+      <div id="scene-2" class="clip" data-start="4.5" data-duration="5.0">
+        <div class="scene-header">
+          <div id="s2-badge" class="badge-pill">
+            <span>✨ Pure Desi Breeds</span>
+          </div>
+          <h2 id="s2-heading" class="scene-heading">
+            Monthly Subscription <span class="highlight-emerald">Plans</span>
+          </h2>
+          <p id="s2-sub" style="font-size: 24px; color: var(--text-sub);">Direct from our farm to your glass • 100% Raw & Unadulterated</p>
+        </div>
+
+        <div class="plans-container">
+          <!-- Card 1: Cow Milk -->
+          <div id="plan-cow" class="plan-card cow-card">
+            <div class="plan-img-wrap">
+              <img src="assets/images/cow_milk_plan.jpg" alt="Pure Gir Cow Milk">
+            </div>
+            <div class="badge-gold-pill" style="margin-bottom: 14px;">🐄 Desi Gir Cow • Half Liter</div>
+            <h3 class="plan-title">Pure Cow Milk Plan</h3>
+            <p class="plan-desc">Naturally sweet, light & easy to digest. Freshly milked every dawn and delivered raw in sterilized bottles.</p>
+            <div class="plan-chips">
+              <span class="chip">🥛 500ml Daily</span>
+              <span class="chip">🛡️ Zero Preservatives</span>
+              <span class="chip">🛵 Free Delivery</span>
+            </div>
+            <div class="plan-footer">
+              <div>
+                <span class="plan-price-num">₹28</span>
+                <span class="plan-price-unit">/ 500ml (₹849/mo)</span>
+              </div>
+              <div class="plan-badge-btn">Book Plan →</div>
+            </div>
+          </div>
+
+          <!-- Card 2: Buffalo Milk -->
+          <div id="plan-buffalo" class="plan-card buffalo-card">
+            <div class="plan-img-wrap">
+              <img src="assets/images/buffalo_milk_plan.png" alt="Pure Murrah Buffalo Milk">
+            </div>
+            <div class="badge-pill" style="margin-bottom: 14px; padding: 6px 16px; font-size: 16px;">🐃 Murrah Buffalo • Half Liter</div>
+            <h3 class="plan-title">Murrah Buffalo Milk</h3>
+            <p class="plan-desc">Thick, velvety & high in natural calcium. Perfect for thick morning chai, rich golden ghee, and thick creamy malai.</p>
+            <div class="plan-chips">
+              <span class="chip">🥛 High Calcium</span>
+              <span class="chip">🧈 Rich Malai</span>
+              <span class="chip">🛵 Free Delivery</span>
+            </div>
+            <div class="plan-footer">
+              <div>
+                <span class="plan-price-num">₹33</span>
+                <span class="plan-price-unit">/ 500ml (₹999/mo)</span>
+              </div>
+              <div class="plan-badge-btn">Book Plan →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 3: Trace Batch Video Proof (9.5s - 14.0s) -->
+      <div id="scene-3" class="clip" data-start="9.5" data-duration="4.5">
+        <div class="trace-layout">
+          <div class="trace-info">
+            <div id="s3-badge" class="badge-pill">
+              <span>🔍 100% Purity Proof</span>
+            </div>
+            <h2 id="s3-heading" style="font-size: 68px; font-weight: 900; line-height: 1.12; margin-bottom: 24px;">
+              Don't Just Trust Us.<br>
+              <span class="highlight-emerald">Watch Your Batch Video.</span>
+            </h2>
+            <p id="s3-sub" style="font-size: 26px; color: var(--text-sub); line-height: 1.45; margin-bottom: 30px;">
+              Every morning bottle has a unique batch code. Scan to watch the video of actual milking, fat testing, and sealing for that exact batch.
+            </p>
+            <div class="badge-gold-pill" style="font-size: 22px; padding: 12px 28px;">
+              ⚡ First in India with Live Batch QR Transparency
+            </div>
+          </div>
+
+          <div id="s3-card" class="trace-card">
+            <div id="s3-laser" class="scan-laser"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <div style="font-size: 20px; color: var(--text-sub);">BATCH #MK-2026-TODAY</div>
+              <div style="background: rgba(0,230,118,0.18); color: var(--emerald-primary); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 16px;">
+                ● VERIFIED PURE
+              </div>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label"><span>🧪</span> Adulteration & Chemical Test</span>
+              <span class="metric-val">0.00% (Clean)</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label"><span>🥛</span> Natural Fat Content</span>
+              <span class="metric-val">6.8% Pure SNF</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label"><span>⏰</span> Milking & Bottling Time</span>
+              <span class="metric-val">04:15 AM Today</span>
+            </div>
+            <div class="metric-row" style="background: rgba(0, 230, 118, 0.12); border-color: rgba(0, 230, 118, 0.3);">
+              <span class="metric-label" style="color: #FFF;"><span>🎥</span> Daily Milking Footage</span>
+              <span class="metric-val" style="color: var(--emerald-primary);">Available in 1080p</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 4: Punchline & Outro (14.0s - 18.0s) -->
+      <div id="scene-4" class="clip" data-start="14.0" data-duration="4.0">
+        <div id="s4-logo" class="outro-logo-wrap">
+          <img src="assets/images/logo.png" alt="Milkman">
+        </div>
+        <h1 id="s4-title" class="brand-title">
+          Milk<span class="highlight-emerald">man</span>
+        </h1>
+        <p id="s4-tagline" class="outro-tagline">
+          Farm fresh milk, every morning. Before you even wake up.
+        </p>
+        <div id="s4-cta" class="cta-box">
+          <span>Start Your Daily Drop 🥛</span>
+        </div>
+        <div id="s4-url" class="cta-url">
+          MILKMAN.SITE
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // GSAP Timelines setup
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["main"] = tl;
+
+      // SCENE 1 TIMELINE (0.0s - 4.5s)
+      // Entrance
+      tl.fromTo("#s1-badge", 
+        { opacity: 0, y: -20 }, 
+        { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 
+        0.2
+      );
+      tl.fromTo("#s1-title", 
+        { opacity: 0, y: 30 }, 
+        { opacity: 1, y: 0, duration: 0.8, ease: "power4.out" }, 
+        0.4
+      );
+      tl.fromTo("#s1-sub", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 
+        0.6
+      );
+      tl.fromTo("#s1-img-card", 
+        { opacity: 0, scale: 0.9, rotationY: 15 }, 
+        { opacity: 1, scale: 1, rotationY: 0, duration: 1.0, ease: "back.out(1.2)" }, 
+        0.4
+      );
+      tl.fromTo("#s1-stat", 
+        { opacity: 0, y: 30, scale: 0.85 }, 
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, 
+        1.0
+      );
+
+      // Subtle float during scene 1
+      tl.to("#s1-img-card", { y: -12, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 1.2);
+
+      // Scene 1 Exit
+      tl.to("#scene-1", 
+        { opacity: 0, scale: 0.95, filter: "blur(8px)", duration: 0.5, ease: "power2.in" }, 
+        4.1
+      );
+
+      // SCENE 2 TIMELINE (4.5s - 9.5s)
+      // Header entrance
+      tl.fromTo("#s2-badge", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.5);
+      tl.fromTo("#s2-heading", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power4.out" }, 4.6);
+      tl.fromTo("#s2-sub", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.7);
+
+      // Card 1: Cow Milk
+      tl.fromTo("#plan-cow", 
+        { opacity: 0, x: -80, scale: 0.9, rotateY: 10 }, 
+        { opacity: 1, x: 0, scale: 1, rotateY: 0, duration: 0.7, ease: "back.out(1.2)" }, 
+        4.8
+      );
+
+      // Card 2: Buffalo Milk
+      tl.fromTo("#plan-buffalo", 
+        { opacity: 0, x: 80, scale: 0.9, rotateY: -10 }, 
+        { opacity: 1, x: 0, scale: 1, rotateY: 0, duration: 0.7, ease: "back.out(1.2)" }, 
+        6.2
+      );
+
+      // Scene 2 Exit
+      tl.to("#scene-2", 
+        { opacity: 0, scale: 1.05, filter: "blur(10px)", duration: 0.5, ease: "power2.in" }, 
+        9.2
+      );
+
+      // SCENE 3 TIMELINE (9.5s - 14.0s)
+      tl.fromTo("#s3-badge", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 9.5);
+      tl.fromTo("#s3-heading", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.7, ease: "power4.out" }, 9.6);
+      tl.fromTo("#s3-sub", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 9.8);
+
+      tl.fromTo("#s3-card", 
+        { opacity: 0, scale: 0.88, rotateX: 12 }, 
+        { opacity: 1, scale: 1, rotateX: 0, duration: 0.8, ease: "back.out(1.3)" }, 
+        9.7
+      );
+
+      // Laser scanner animation
+      tl.fromTo("#s3-laser", 
+        { y: 0 }, 
+        { y: 380, duration: 1.8, ease: "power1.inOut", repeat: 1, yoyo: true }, 
+        10.2
+      );
+
+      // Scene 3 Exit
+      tl.to("#scene-3", 
+        { opacity: 0, y: -40, filter: "blur(8px)", duration: 0.5, ease: "power2.in" }, 
+        13.7
+      );
+
+      // SCENE 4 TIMELINE (14.0s - 18.0s)
+      tl.fromTo("#s4-logo", 
+        { opacity: 0, scale: 0.5, rotation: -20 }, 
+        { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: "back.out(1.8)" }, 
+        14.1
+      );
+      tl.fromTo("#s4-title", 
+        { opacity: 0, y: 30 }, 
+        { opacity: 1, y: 0, duration: 0.7, ease: "power4.out" }, 
+        14.3
+      );
+      tl.fromTo("#s4-tagline", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 
+        14.6
+      );
+      tl.fromTo("#s4-cta", 
+        { opacity: 0, scale: 0.8 }, 
+        { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.5)" }, 
+        14.9
+      );
+      tl.fromTo("#s4-url", 
+        { opacity: 0, y: 15 }, 
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 
+        15.2
+      );
+
+      // BGM fade-out at the end
+      tl.fromTo("#bgm", { volume: 0.85 }, { volume: 0, duration: 1.5, ease: "power1.out" }, 16.5);
+
+      tl.seek(0);
+    </script>
+  </body>
+</html>

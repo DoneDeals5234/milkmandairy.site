@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_HOST = window.location.hostname || 'localhost';
-    const API_BASE = (window.location.protocol === 'file:')
-        ? 'http://localhost:8080'
-        : window.location.origin;
+    const API_HOST = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+        ? window.location.hostname
+        : 'localhost';
+    const API_BASE = window.location.origin.includes(':8080')
+        ? window.location.origin
+        : (window.location.hostname ? `http://${window.location.hostname}:8080` : 'http://localhost:8080');
     window.API_BASE = API_BASE;
 
     // --- Custom Popup Logic Override ---
@@ -15,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('customPopupInput').style.display = 'none';
             const buttonsEl = document.getElementById('customPopupButtons');
             buttonsEl.innerHTML = `<button class="custom-popup-btn btn-confirm">OK</button>`;
-            
+
             overlay.classList.add('active');
             buttonsEl.querySelector('.btn-confirm').onclick = () => {
                 overlay.classList.remove('active');
@@ -23,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
     };
-    
+
     // Override default alert
     window.alert = (msg) => {
         window.customAlert("Message", msg);
@@ -62,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user) {
             let userData;
-            try { userData = JSON.parse(user); } catch(e) { userData = {}; }
+            try { userData = JSON.parse(user); } catch (e) { userData = {}; }
             const firstName = (userData.name || 'User').split(' ')[0];
             const cleanPhone = (userData.phone || '').replace(/\D/g, '').replace(/^91/, '');
 
@@ -111,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         setSubDisplay(false);
                     }
-                } catch(e) {
+                } catch (e) {
                     setSubDisplay(false);
                 }
             }
@@ -146,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hash Routing Logic
     const handleHashChange = () => {
         const hash = window.location.hash || '#home';
-        
+
         // Hide all modals by default
         if (authModal) {
             authModal.classList.remove('active');
@@ -168,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (step1) step1.style.display = 'none';
             if (step2) step2.style.display = 'block';
         }
-        
+
         // Retrieve all sections
         const homeSection = document.getElementById('home');
         const plansSection = document.getElementById('plans');
@@ -176,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const promoRibbon = document.querySelector('.promo-ribbon');
         const cartSection = document.getElementById('cartSection');
         const ordersSection = document.getElementById('ordersSection');
-        
+
         if (hash === '#cart') {
             // Hide Home page content
             if (homeSection) homeSection.style.display = 'none';
@@ -269,13 +271,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, status: 'offline' })
                 });
-            } catch(e) {}
+            } catch (e) { }
         }
-        
+
         localStorage.removeItem('milkmanUser');
         try {
             await fetch(API_BASE + '/api/auth/sign-out', { method: 'POST' });
-        } catch(e) {}
+        } catch (e) { }
         if (window.closeMobileNav) window.closeMobileNav();
         checkSession();
     };
@@ -336,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ email: loggedUser.email, status: 'active', phone: loggedUser.phone })
                         });
-                    } catch(e) {}
+                    } catch (e) { }
 
                     // Close modal
                     if (authModal) {
@@ -414,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
         verifyOtpBtn.addEventListener('click', async () => {
             let phone = authPhone.value.trim().replace(/\D/g, '');
             if (phone.length === 10) phone = '91' + phone;
-            
+
             const name = authName.value.trim();
             const otp = authOtp.value.trim();
 
@@ -458,16 +460,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (authRes.ok) {
                     // Success! Save session and close modal
                     const userId = authData.user ? authData.user.id : '';
-                    localStorage.setItem('milkmanUser', JSON.stringify({ 
-                        id: userId, 
-                        name: authData.user.name, 
-                        phone, 
-                        email, 
-                        isSubscribed: false 
+                    localStorage.setItem('milkmanUser', JSON.stringify({
+                        id: userId,
+                        name: authData.user.name,
+                        phone,
+                        email,
+                        isSubscribed: false
                     }));
                     authModal.classList.remove('active');
                     checkSession();
-                    
+
                     // Mark as active
                     try {
                         await fetch(API_BASE + '/api/custom/update-status', {
@@ -475,11 +477,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ email, status: 'active', phone })
                         });
-                    } catch(e) {}
-                    
+                    } catch (e) { }
+
                     // Init FCM
                     if (window.initFirebaseFCM) window.initFirebaseFCM(phone);
-                    
+
                     alert("Successfully logged in! 🎉");
                 } else {
                     throw new Error(authData.message || "Auth failed");
@@ -495,29 +497,255 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Product Loading Logic ---
+    // --- Product Loading Logic & Half-Screen Bottom Sheet ---
     const productsGrid = document.getElementById('productsGrid');
-    
+
+    // Bottom Sheet State
+    let currentSheetProduct = null;
+    let currentSheetImages = [];
+    let currentImageIndex = 0;
+    let currentSheetQty = 1;
+
+    function updateSheetMainImage(index) {
+        if (!currentSheetImages || currentSheetImages.length === 0) return;
+        if (index < 0) index = currentSheetImages.length - 1;
+        if (index >= currentSheetImages.length) index = 0;
+        currentImageIndex = index;
+
+        const mainImg = document.getElementById('productSheetMainImage');
+        const badge = document.getElementById('galleryCounterBadge');
+        const prevBtn = document.getElementById('galleryPrevBtn');
+        const nextBtn = document.getElementById('galleryNextBtn');
+
+        if (mainImg) {
+            mainImg.style.opacity = '0';
+            setTimeout(() => {
+                mainImg.src = currentSheetImages[currentImageIndex];
+                mainImg.style.opacity = '1';
+            }, 100);
+        }
+
+        if (badge) {
+            badge.innerText = `${currentImageIndex + 1} / ${currentSheetImages.length}`;
+            badge.style.display = currentSheetImages.length > 1 ? 'block' : 'none';
+        }
+
+        if (prevBtn) prevBtn.style.display = currentSheetImages.length > 1 ? 'flex' : 'none';
+        if (nextBtn) nextBtn.style.display = currentSheetImages.length > 1 ? 'flex' : 'none';
+
+        // Update active thumbnail
+        document.querySelectorAll('.gallery-thumb-item').forEach((thumb, idx) => {
+            if (idx === currentImageIndex) thumb.classList.add('active');
+            else thumb.classList.remove('active');
+        });
+    }
+
+    function updateSheetQty(newQty) {
+        if (newQty < 1) newQty = 1;
+        currentSheetQty = newQty;
+        const qtyValEl = document.getElementById('sheetQtyVal');
+        const addPriceEl = document.getElementById('sheetAddCartPrice');
+        if (qtyValEl) qtyValEl.innerText = currentSheetQty;
+        if (addPriceEl && currentSheetProduct) {
+            addPriceEl.innerText = '₹' + (currentSheetProduct.price * currentSheetQty);
+        }
+    }
+
+    function openProductBottomSheet(product) {
+        currentSheetProduct = product;
+        currentSheetQty = 1;
+
+        // Parse images
+        let images = [];
+        if (product.images) {
+            try {
+                images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+            } catch (e) {
+                images = [product.images];
+            }
+        }
+        if (!Array.isArray(images) || images.length === 0) {
+            images = [product.image_url || product.image_base64 || 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=400'];
+        }
+        currentSheetImages = images;
+        currentImageIndex = 0;
+
+        // Populate Details
+        const titleEl = document.getElementById('productSheetTitle');
+        const priceEl = document.getElementById('productSheetPrice');
+        const unitEl = document.getElementById('productSheetUnit');
+        const descEl = document.getElementById('productSheetDesc');
+        const stockEl = document.getElementById('productSheetStockBadge');
+
+        if (titleEl) titleEl.innerText = product.name;
+        if (priceEl) priceEl.innerText = '₹' + product.price;
+        if (unitEl) unitEl.innerText = product.quantity ? '/ ' + product.quantity : '/ 1 Litre';
+        if (descEl) descEl.innerText = product.description || '100% Pure, farm fresh and natural dairy product, delivered with cold-chain sanitized care.';
+
+        if (stockEl) {
+            const inStock = product.available_stock === undefined || product.available_stock === null || product.available_stock > 0;
+            stockEl.innerText = inStock ? 'In Stock • Farm Fresh' : 'Out of Stock';
+            stockEl.style.color = inStock ? '#38bdf8' : '#f87171';
+        }
+
+        // Render Thumbnails
+        const strip = document.getElementById('galleryThumbnailsStrip');
+        if (strip) {
+            if (currentSheetImages.length > 1) {
+                strip.style.display = 'flex';
+                strip.innerHTML = currentSheetImages.map((src, idx) => `
+                    <div class="gallery-thumb-item ${idx === 0 ? 'active' : ''}" onclick="window.setSheetImageIndex(${idx})">
+                        <img src="${src}" alt="Thumb ${idx + 1}">
+                    </div>
+                `).join('');
+            } else {
+                strip.style.display = 'none';
+                strip.innerHTML = '';
+            }
+        }
+
+        // Initial image and qty
+        updateSheetMainImage(0);
+        updateSheetQty(1);
+
+        // Open bottom sheet
+        const backdrop = document.getElementById('productBottomSheetBackdrop');
+        const sheet = document.getElementById('productBottomSheet');
+        if (backdrop) {
+            backdrop.style.display = 'block';
+            requestAnimationFrame(() => backdrop.classList.add('active'));
+        }
+        if (sheet) {
+            sheet.setAttribute('aria-hidden', 'false');
+            requestAnimationFrame(() => sheet.classList.add('active'));
+        }
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeProductBottomSheet() {
+        const backdrop = document.getElementById('productBottomSheetBackdrop');
+        const sheet = document.getElementById('productBottomSheet');
+        if (backdrop) backdrop.classList.remove('active');
+        if (sheet) {
+            sheet.classList.remove('active');
+            sheet.setAttribute('aria-hidden', 'true');
+        }
+        setTimeout(() => {
+            if (backdrop) backdrop.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 360);
+    }
+
+    // Expose helpers globally
+    window.openProductBottomSheet = openProductBottomSheet;
+    window.closeProductBottomSheet = closeProductBottomSheet;
+    window.setSheetImageIndex = (idx) => updateSheetMainImage(idx);
+
+    // Attach listeners for Sheet controls
+    document.getElementById('galleryPrevBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        updateSheetMainImage(currentImageIndex - 1);
+    });
+    document.getElementById('galleryNextBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        updateSheetMainImage(currentImageIndex + 1);
+    });
+    document.getElementById('productBottomSheetBackdrop')?.addEventListener('click', closeProductBottomSheet);
+    document.getElementById('productSheetCloseBtn')?.addEventListener('click', closeProductBottomSheet);
+    document.getElementById('productSheetHandle')?.addEventListener('click', closeProductBottomSheet);
+
+    document.getElementById('sheetQtyMinus')?.addEventListener('click', () => {
+        updateSheetQty(currentSheetQty - 1);
+    });
+    document.getElementById('sheetQtyPlus')?.addEventListener('click', () => {
+        updateSheetQty(currentSheetQty + 1);
+    });
+
+    // Sheet Add to Cart button
+    document.getElementById('sheetAddToCartBtn')?.addEventListener('click', () => {
+        if (!currentSheetProduct) return;
+        const userSession = localStorage.getItem('milkmanUser');
+        if (!userSession) {
+            alert("Please login first to add items to cart!");
+            window.location.hash = 'login';
+            closeProductBottomSheet();
+            return;
+        }
+
+        let cart = JSON.parse(localStorage.getItem('milkmanCart') || '[]');
+        let existing = cart.find(i => i.productId === currentSheetProduct.id);
+        const coverImage = (currentSheetImages && currentSheetImages[0]) || currentSheetProduct.image_url || '';
+        const unit = currentSheetProduct.quantity || '1 Litre';
+
+        if (existing) {
+            existing.quantity += currentSheetQty;
+            existing.imageUrl = coverImage || existing.imageUrl;
+            existing.unit = unit || existing.unit;
+        } else {
+            cart.push({
+                productId: currentSheetProduct.id,
+                productName: currentSheetProduct.name,
+                price: parseInt(currentSheetProduct.price),
+                quantity: currentSheetQty,
+                imageUrl: coverImage,
+                unit: unit
+            });
+        }
+
+        localStorage.setItem('milkmanCart', JSON.stringify(cart));
+        if (window.updateCartCount) window.updateCartCount();
+
+        // Animate button feedback
+        const addBtn = document.getElementById('sheetAddToCartBtn');
+        const originalContent = addBtn.innerHTML;
+        addBtn.innerHTML = '<span>✅ Added to Cart!</span>';
+        addBtn.style.background = '#10B981';
+
+        setTimeout(() => {
+            addBtn.innerHTML = originalContent;
+            addBtn.style.background = '';
+            closeProductBottomSheet();
+        }, 500);
+    });
+
     async function loadProducts() {
         if (!productsGrid) return;
-        
+
         try {
             const res = await fetch(API_BASE + '/api/products');
             const data = await res.json();
-            
+
             if (data.success && data.products) {
                 productsGrid.innerHTML = ''; // clear loading state
-                
+
                 if (data.products.length === 0) {
                     productsGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1; color: var(--text-light);">No products available yet.</p>';
                     return;
                 }
-                
+
                 data.products.forEach(product => {
+                    let images = [];
+                    if (product.images) {
+                        try {
+                            images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+                        } catch (e) {
+                            images = [product.images];
+                        }
+                    }
+                    if (!Array.isArray(images) || images.length === 0) {
+                        images = product.image_url ? [product.image_url] : [];
+                    }
+                    const imgCount = images.length;
+                    const primaryImg = images[0] || product.image_url || 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=400';
+
                     const card = document.createElement('div');
                     card.className = 'product-card';
+                    card.style.position = 'relative';
+                    card.style.cursor = 'pointer';
+
                     card.innerHTML = `
-                        <img src="${product.image_url || 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=400'}" alt="${product.name}" class="product-image">
+                        ${imgCount > 1 ? `<div class="card-multi-img-badge"><span>📸 ${imgCount} Photos</span></div>` : ''}
+                        <img src="${primaryImg}" alt="${product.name}" class="product-image">
                         <h3 class="product-title" style="text-align: left;">${product.name}</h3>
                         <p class="product-desc" style="text-align: left;">${product.description || ''}</p>
                         
@@ -558,21 +786,28 @@ document.addEventListener('DOMContentLoaded', () => {
                             </button>
                         </div>
                     `;
+
+                    // Click on card opens half-screen bottom sheet with multi-image gallery
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('.btn-add-cart')) return;
+                        openProductBottomSheet(product);
+                    });
+
                     productsGrid.appendChild(card);
                 });
-                
+
                 attachSubscribeListeners();
             }
         } catch (e) {
             console.error('Failed to load products:', e);
-            if(productsGrid) productsGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1; color: red;">Failed to load products from server.</p>';
+            if (productsGrid) productsGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1; color: red;">Failed to load products from server.</p>';
         }
     }
-    
+
     // Call attachSubscribeListeners initially for static elements (Plans, Promo ribbon)
     attachSubscribeListeners();
     loadProducts();
-    
+
     // --- Professional Fly to Cart Animation Function ---
     function playFlyToCartAnimation(btnEl) {
         try {
@@ -580,7 +815,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const headerCartBtn = document.getElementById('headerCartBtn');
             const navCart = document.getElementById('navCart');
             const cartCountBadge = document.getElementById('cartCount');
-            
+
             // Determine active target element
             let targetEl = null;
             if (headerCartBtn && headerCartBtn.offsetParent !== null) {
@@ -597,11 +832,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Find parent product card / section to locate product image
-            const card = btnEl.closest('.product-card') || 
-                         btnEl.closest('.product-card-new') || 
-                         btnEl.closest('.plan-horizontal-ribbon') || 
-                         btnEl.closest('.promo-ribbon') || 
-                         btnEl;
+            const card = btnEl.closest('.product-card') ||
+                btnEl.closest('.product-card-new') ||
+                btnEl.closest('.plan-horizontal-ribbon') ||
+                btnEl.closest('.promo-ribbon') ||
+                btnEl;
 
             const img = card ? card.querySelector('img') : null;
             const startRect = (img && img.getBoundingClientRect().width > 0) ? img.getBoundingClientRect() : btnEl.getBoundingClientRect();
@@ -690,22 +925,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.hash = 'login';
                     return;
                 }
-                
+
                 const btnEl = e.target.closest('.btn-add-cart') || e.currentTarget;
                 if (!btnEl) return;
-                
+
                 const productId = btnEl.getAttribute('data-id');
                 const productName = btnEl.getAttribute('data-name');
                 const price = btnEl.getAttribute('data-price');
-                
+
                 // Extract card image and unit for cart item display
-                const parentCard = btnEl.closest('.product-card') || 
-                                   btnEl.closest('.product-card-new') || 
-                                   btnEl.closest('.plan-horizontal-ribbon') || 
-                                   btnEl.closest('.promo-ribbon');
+                const parentCard = btnEl.closest('.product-card') ||
+                    btnEl.closest('.product-card-new') ||
+                    btnEl.closest('.plan-horizontal-ribbon') ||
+                    btnEl.closest('.promo-ribbon');
                 const imgEl = parentCard ? parentCard.querySelector('img') : null;
                 const unitEl = parentCard ? parentCard.querySelector('.product-unit-new') : null;
-                
+
                 let imageUrl = '';
                 if (productId === 'promo_shobha' || (productName && productName.toLowerCase().includes('toilet cleaner'))) {
                     imageUrl = 'assets/shobha_toilet_cleaner.png';
@@ -716,13 +951,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (productId === 'plan_buffalo' || productId === 'plan_buffalo_half') imageUrl = 'assets/buffalo_milk_plan.png';
                 }
 
-                const unit = (productId === 'promo_shobha' || (productName && productName.toLowerCase().includes('toilet cleaner'))) 
-                    ? '500 ml' 
+                const unit = (productId === 'promo_shobha' || (productName && productName.toLowerCase().includes('toilet cleaner')))
+                    ? '500 ml'
                     : (unitEl ? unitEl.innerText.trim() : (productId.includes('half') ? '30 Days / 500ml' : (productId.startsWith('plan_') ? '30 Days / 1L' : '1 Litre')));
 
                 let cart = JSON.parse(localStorage.getItem('milkmanCart') || '[]');
                 let existing = cart.find(i => i.productId === productId);
-                if(existing) {
+                if (existing) {
                     existing.quantity += 1;
                     existing.imageUrl = imageUrl || existing.imageUrl;
                     existing.unit = unit || existing.unit;
@@ -730,7 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     cart.push({ productId, productName, price: parseInt(price), quantity: 1, imageUrl, unit });
                 }
                 localStorage.setItem('milkmanCart', JSON.stringify(cart));
-                
+
                 if (btnEl.classList.contains('btn-book-plan')) {
                     if (window.updateCartCount) window.updateCartCount();
                     if (window.location.hash === '#cart') {
@@ -740,7 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     return;
                 }
-                
+
                 // Play smooth Fly-to-Cart animation
                 playFlyToCartAnimation(btnEl);
 
@@ -748,8 +983,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ogHtml = btnEl.innerHTML;
                 btnEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:6px;">✓ Added!</span>`;
                 btnEl.style.pointerEvents = 'none';
-                setTimeout(() => { 
-                    btnEl.innerHTML = ogHtml; 
+                setTimeout(() => {
+                    btnEl.innerHTML = ogHtml;
                     btnEl.style.pointerEvents = 'auto';
                 }, 1100);
             });
@@ -767,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 authDomain: "barber-app-6993a.firebaseapp.com",
                 projectId: "barber-app-6993a",
                 storageBucket: "barber-app-6993a.firebasestorage.app",
-                messagingSenderId: "1091592092089", 
+                messagingSenderId: "1091592092089",
                 appId: "1:1091592092089:android:03dad6d101f55c9beade68"
             };
 
@@ -784,16 +1019,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
                 console.log('Notification permission granted.');
-                const currentToken = await window.getToken(messaging, { 
-                    vapidKey: 'BH9gOHm_tq4c8-cKcbS3gsaqEmR-aCExhB5Sr9ANLXFSBD_55Bh0JRIQFHJDihUHVI_KgqgtoRk-QMOk0F77aqw' 
+                const currentToken = await window.getToken(messaging, {
+                    vapidKey: 'BH9gOHm_tq4c8-cKcbS3gsaqEmR-aCExhB5Sr9ANLXFSBD_55Bh0JRIQFHJDihUHVI_KgqgtoRk-QMOk0F77aqw'
                 });
                 if (currentToken) {
                     console.log('FCM Token generated:', currentToken);
                     // Send to backend
                     await fetch(API_BASE + '/api/custom/update-player-id', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
                             email: `${phone.replace(/\\D/g, '')}@milkman.local`,
                             playerId: currentToken
                         })
@@ -815,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
             initFirebaseFCM(u.phone);
         }
     }
-    
+
     // Make entire Plan Horizontal Ribbon Card clickable as a Button
     document.querySelectorAll('.plan-horizontal-ribbon').forEach(card => {
         card.style.cursor = 'pointer';
@@ -873,7 +1108,281 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Custom Plan Bottom Sheet Interactive Logic ---
+    function initCustomPlanSheet() {
+        const ribbonCard = document.getElementById('ribbonCustomPlanCard');
+        const openBtn = document.getElementById('btnOpenCustomPlanSheet');
+        const modal = document.getElementById('customPlanSheetModal');
+        const backdrop = document.getElementById('customSheetBackdrop');
+        const closeBtn = document.getElementById('closeCustomPlanSheetBtn');
+        const addCartBtn = document.getElementById('btnAddToCartCustomPlan');
+
+        if (!modal) return;
+
+        // Date formatters
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dayAfter = new Date();
+        dayAfter.setDate(dayAfter.getDate() + 2);
+
+        const formatDateStr = (d) => d.toISOString().split('T')[0];
+        const formatNiceDate = (d) => d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+
+        const tomorrowStr = formatDateStr(tomorrow);
+        const dayAfterStr = formatDateStr(dayAfter);
+
+        const tomorrowLabel = document.getElementById('tomorrowDateLabel');
+        const dayAfterLabel = document.getElementById('dayAfterDateLabel');
+        const dateInput = document.getElementById('customDatePickerInput');
+
+        if (tomorrowLabel) tomorrowLabel.innerText = formatNiceDate(tomorrow);
+        if (dayAfterLabel) dayAfterLabel.innerText = formatNiceDate(dayAfter);
+        if (dateInput) {
+            dateInput.min = tomorrowStr;
+            dateInput.value = tomorrowStr;
+        }
+
+        // State
+        const state = {
+            milkType: 'cow', // 'cow' or 'buffalo'
+            milkName: 'Pure Desi Cow Milk',
+            ratePerLiter: 56,
+            quantity: 1.0, // in Liters
+            startDate: tomorrowStr,
+            durationDays: 30
+        };
+
+        // DOM elements for display
+        const choiceCow = document.getElementById('choiceCow');
+        const choiceBuffalo = document.getElementById('choiceBuffalo');
+        const qtyRateDisplay = document.getElementById('qtyLiveRateDisplay');
+        const stepperValText = document.getElementById('stepperValText');
+        const stepperMinusBtn = document.getElementById('stepperMinusBtn');
+        const stepperPlusBtn = document.getElementById('stepperPlusBtn');
+        const chipTomorrow = document.getElementById('chipStartTomorrow');
+        const chipDayAfter = document.getElementById('chipStartDayAfter');
+        const headlineEl = document.getElementById('sheetSummaryHeadline');
+        const subHeadlineEl = document.getElementById('sheetSummarySub');
+        const dailyCostEl = document.getElementById('sheetDailyCost');
+        const durationValEl = document.getElementById('sheetDurationVal');
+        const totalAmountEl = document.getElementById('sheetTotalAmount');
+
+        function updateSummary() {
+            const dailyCost = Math.round(state.quantity * state.ratePerLiter);
+            const totalAmount = dailyCost * state.durationDays;
+
+            if (qtyRateDisplay) qtyRateDisplay.innerText = `₹${dailyCost} / day`;
+            if (stepperValText) stepperValText.innerText = state.quantity.toFixed(1);
+            if (dailyCostEl) dailyCostEl.innerText = `₹${dailyCost} / day`;
+            if (durationValEl) durationValEl.innerText = `${state.durationDays} Days`;
+            if (totalAmountEl) totalAmountEl.innerText = totalAmount.toLocaleString('en-IN');
+
+            const startObj = new Date(state.startDate);
+            const niceStart = isNaN(startObj.getTime()) ? state.startDate : formatNiceDate(startObj);
+
+            if (headlineEl) headlineEl.innerText = `${state.milkName} • ${state.quantity}L Daily`;
+            if (subHeadlineEl) subHeadlineEl.innerText = `Starts ${niceStart} • ${state.durationDays} Days Deliveries`;
+        }
+
+        function openSheet() {
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            updateSummary();
+        }
+
+        function closeSheet() {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        if (ribbonCard) {
+            ribbonCard.addEventListener('click', (e) => {
+                openSheet();
+            });
+        }
+        if (openBtn) {
+            openBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openSheet();
+            });
+        }
+        if (backdrop) backdrop.addEventListener('click', closeSheet);
+        if (closeBtn) closeBtn.addEventListener('click', closeSheet);
+
+        // Milk Type switching
+        if (choiceCow) {
+            choiceCow.addEventListener('click', () => {
+                choiceCow.classList.add('active');
+                if (choiceBuffalo) choiceBuffalo.classList.remove('active');
+                state.milkType = 'cow';
+                state.milkName = 'Pure Desi Cow Milk';
+                state.ratePerLiter = 56;
+                updateSummary();
+            });
+        }
+        if (choiceBuffalo) {
+            choiceBuffalo.addEventListener('click', () => {
+                choiceBuffalo.classList.add('active');
+                if (choiceCow) choiceCow.classList.remove('active');
+                state.milkType = 'buffalo';
+                state.milkName = 'Pure Buffalo Milk';
+                state.ratePerLiter = 66;
+                updateSummary();
+            });
+        }
+
+        // Quantity Quick Pills
+        const qtyPills = document.querySelectorAll('.qty-quick-pill');
+        qtyPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                qtyPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                state.quantity = parseFloat(pill.getAttribute('data-qty')) || 1.0;
+                updateSummary();
+            });
+        });
+
+        // Stepper buttons
+        if (stepperMinusBtn) {
+            stepperMinusBtn.addEventListener('click', () => {
+                if (state.quantity > 0.5) {
+                    state.quantity = Math.max(0.5, Math.round((state.quantity - 0.5) * 10) / 10);
+                    qtyPills.forEach(p => {
+                        if (parseFloat(p.getAttribute('data-qty')) === state.quantity) p.classList.add('active');
+                        else p.classList.remove('active');
+                    });
+                    updateSummary();
+                }
+            });
+        }
+        if (stepperPlusBtn) {
+            stepperPlusBtn.addEventListener('click', () => {
+                if (state.quantity < 10.0) {
+                    state.quantity = Math.round((state.quantity + 0.5) * 10) / 10;
+                    qtyPills.forEach(p => {
+                        if (parseFloat(p.getAttribute('data-qty')) === state.quantity) p.classList.add('active');
+                        else p.classList.remove('active');
+                    });
+                    updateSummary();
+                }
+            });
+        }
+
+        // Date selection
+        if (chipTomorrow) {
+            chipTomorrow.addEventListener('click', () => {
+                chipTomorrow.classList.add('active');
+                if (chipDayAfter) chipDayAfter.classList.remove('active');
+                state.startDate = tomorrowStr;
+                if (dateInput) dateInput.value = tomorrowStr;
+                updateSummary();
+            });
+        }
+        if (chipDayAfter) {
+            chipDayAfter.addEventListener('click', () => {
+                chipDayAfter.classList.add('active');
+                if (chipTomorrow) chipTomorrow.classList.remove('active');
+                state.startDate = dayAfterStr;
+                if (dateInput) dateInput.value = dayAfterStr;
+                updateSummary();
+            });
+        }
+        if (dateInput) {
+            dateInput.addEventListener('change', () => {
+                if (dateInput.value) {
+                    state.startDate = dateInput.value;
+                    if (chipTomorrow) chipTomorrow.classList.toggle('active', dateInput.value === tomorrowStr);
+                    if (chipDayAfter) chipDayAfter.classList.toggle('active', dateInput.value === dayAfterStr);
+                    updateSummary();
+                }
+            });
+        }
+
+        // Duration Pills
+        const durPills = document.querySelectorAll('.dur-pick-pill');
+        durPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                durPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                state.durationDays = parseInt(pill.getAttribute('data-days')) || 30;
+                updateSummary();
+            });
+        });
+
+        // Add to Cart
+        if (addCartBtn) {
+            addCartBtn.addEventListener('click', () => {
+                const userSession = localStorage.getItem('milkmanUser');
+                if (!userSession) {
+                    closeSheet();
+                    alert("Please login first to build and book your custom plan!");
+                    window.location.hash = 'login';
+                    return;
+                }
+
+                const dailyCost = Math.round(state.quantity * state.ratePerLiter);
+                const totalAmount = dailyCost * state.durationDays;
+                const productId = `plan_custom_${state.milkType}_${state.quantity}L_${state.durationDays}d`;
+                const productName = `${state.milkName} Custom Plan (${state.quantity}L/day • ${state.durationDays} Days)`;
+                const imageUrl = state.milkType === 'cow' ? 'assets/cow_milk_plan.jpg' : 'assets/buffalo_milk_plan.png';
+                const unit = `${state.durationDays} Days (${state.quantity}L/day)`;
+
+                let cart = JSON.parse(localStorage.getItem('milkmanCart') || '[]');
+
+                // Replace any previous plan in cart so customer has one active subscription
+                const existingIdx = cart.findIndex(i => i.productId && i.productId.startsWith('plan_'));
+                const newPlanItem = {
+                    productId,
+                    productName,
+                    price: totalAmount,
+                    quantity: 1,
+                    imageUrl,
+                    unit,
+                    isCustomPlan: true,
+                    customDetails: {
+                        milkType: state.milkType,
+                        dailyQuantity: `${state.quantity} Liter`,
+                        startDate: state.startDate,
+                        totalDays: state.durationDays,
+                        ratePerUnit: state.ratePerLiter
+                    }
+                };
+
+                if (existingIdx !== -1) {
+                    cart[existingIdx] = newPlanItem;
+                } else {
+                    cart.push(newPlanItem);
+                }
+
+                localStorage.setItem('milkmanCart', JSON.stringify(cart));
+                if (window.updateCartCount) window.updateCartCount();
+
+                closeSheet();
+
+                // Smoothly navigate to Cart
+                if (window.location.hash === '#cart') {
+                    if (window.handleHashChange) window.handleHashChange();
+                    if (window.renderCart) window.renderCart();
+                } else {
+                    window.location.hash = 'cart';
+                }
+            });
+        }
+    }
+
+    // Initialize custom plan sheet
+    initCustomPlanSheet();
+
     // We also need to export it to window so we can call it on new login
     window.initFirebaseFCM = initFirebaseFCM;
+});
+
+// Initialize custom plan sheet
+initCustomPlanSheet();
+
+// We also need to export it to window so we can call it on new login
+window.initFirebaseFCM = initFirebaseFCM;
 });
 

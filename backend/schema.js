@@ -95,6 +95,7 @@ export const products = sqliteTable("products", {
     quantity: text("quantity"),
     description: text("description"),
     imageUrl: text("image_url"),
+    images: text("images"),
 });
 
 export const userSubscriptions = sqliteTable("user_subscriptions", {
