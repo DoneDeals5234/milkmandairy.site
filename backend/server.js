@@ -79,6 +79,19 @@ async function ensureDbIndexes() {
         await db.execute(`CREATE INDEX IF NOT EXISTS idx_user_sub_userId ON user_subscriptions (userId);`);
         await db.execute(`CREATE INDEX IF NOT EXISTS idx_user_phone ON user (phoneNumber);`);
         await db.execute(`CREATE INDEX IF NOT EXISTS idx_areas_active ON serviceable_areas (isActive);`);
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS upi_transactions (
+                id TEXT PRIMARY KEY,
+                customerName TEXT,
+                customerPhone TEXT,
+                amount REAL NOT NULL,
+                txnId TEXT NOT NULL,
+                utr TEXT,
+                vpa TEXT DEFAULT 'vir523452@okhdfcbank',
+                status TEXT NOT NULL,
+                createdAt TEXT NOT NULL
+            );
+        `);
     } catch (e) {
         // Silently continue if tables/indexes are already configured
     }
@@ -492,11 +505,13 @@ app.post("/api/custom/order", async (req, res) => {
                 const end = new Date(startDateObj.getTime() + totalDays * 24 * 60 * 60 * 1000);
                 const endStr = end.toISOString().split('T')[0];
 
+                const subPaymentStatus = req.body.paymentStatus || 'PAY_LATER';
+
                 await db.execute({
                     sql: `INSERT INTO user_subscriptions 
                           (id, userId, planId, planName, dailyQuantity, ratePerUnit, totalDays, startDate, endDate, totalAmount, paymentStatus, status, nextDayPaused, createdAt) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_AT_DOORSTEP', 'ACTIVE', 0, ?)`,
-                    args: [subId, userId, planItem.productId || 'plan_cow', planName, dailyQty, rate, totalDays, startStr, endStr, totalAmount, Date.now()]
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 0, ?)`,
+                    args: [subId, userId, planItem.productId || 'plan_cow', planName, dailyQty, rate, totalDays, startStr, endStr, totalAmount, subPaymentStatus, Date.now()]
                 });
 
                 await db.execute({
@@ -1035,6 +1050,75 @@ app.post("/api/subscription/toggle-pause", async (req, res) => {
             }
         }
 
+        // WhatsApp Notifications: Send alert to Owner (7696880795) and Customer
+        try {
+            const userRes = await db.execute({
+                sql: "SELECT name, phoneNumber, deliveryArea, houseNo FROM user WHERE id = ? LIMIT 1",
+                args: [userId]
+            });
+            const subRes = await db.execute({
+                sql: "SELECT planName, dailyQuantity FROM user_subscriptions WHERE id = ? LIMIT 1",
+                args: [subscriptionId]
+            });
+
+            if (userRes.rows.length > 0) {
+                const customer = userRes.rows[0];
+                const subInfo = (subRes.rows.length > 0) ? subRes.rows[0] : {};
+                const customerName = customer.name || 'Subscriber';
+                const customerPhone = customer.phoneNumber || '';
+                const address = `${customer.deliveryArea || ''}${customer.houseNo ? ', ' + customer.houseNo : ''}`.trim() || 'Home Address';
+                const planTitle = subInfo.planName || 'Daily Milk Subscription';
+                const qty = subInfo.dailyQuantity || '';
+
+                if (shouldPause) {
+                    // 1. Alert to Owner (7696880795)
+                    const ownerMsg =
+                        `🛑 *MILKMAN ALERT: DELIVERY SKIPPED*\n\n` +
+                        `Ek customer ne kal ki milk delivery *SKIP / PAUSE* ki hai:\n\n` +
+                        `👤 *Customer:* ${customerName}\n` +
+                        `📞 *Phone:* ${customerPhone}\n` +
+                        `📍 *Address:* ${address}\n` +
+                        `🥛 *Plan:* ${planTitle} (${qty})\n` +
+                        `📅 *Skipped Date:* ${tomorrowStr} (Kal)\n\n` +
+                        `⚠️ *Route Note:* Kal inke address par milk bottle deliver *MAT KARNA*.`;
+                    sendOwnerAlert(ownerMsg).catch(err => console.error("Error sending owner skip alert:", err));
+
+                    // 2. Confirmation to Customer
+                    if (customerPhone) {
+                        const customerMsg =
+                            `🥛 *Milkman Dairy Update*\n\n` +
+                            `Hi ${customerName}, aapki request ke mutabiq kal (*${tomorrowStr}*) ki milk delivery successfully *PAUSE / SKIP* kar di gayi hai.\n\n` +
+                            `📦 *Plan:* ${planTitle}\n` +
+                            `✅ Agle din se aapki regular fresh milk supply continue rahegi.\n\n` +
+                            `Agar aap ise wapas resume karna chahein toh aaj raat 11:00 PM se pehle website par jakar *Resume* kar sakte hain. 🙏`;
+                        sendWhatsAppNotification(customerPhone, customerMsg).catch(err => console.error("Error sending customer skip confirmation:", err));
+                    }
+                } else {
+                    // Resumed notifications
+                    const ownerResumeMsg =
+                        `✅ *MILKMAN ALERT: DELIVERY RESUMED*\n\n` +
+                        `Customer ne kal ki milk delivery wapas *RESUME* kar li hai:\n\n` +
+                        `👤 *Customer:* ${customerName}\n` +
+                        `📞 *Phone:* ${customerPhone}\n` +
+                        `📍 *Address:* ${address}\n` +
+                        `🥛 *Plan:* ${planTitle} (${qty})\n` +
+                        `📅 *Delivery Date:* ${tomorrowStr} (Kal)\n\n` +
+                        `👉 *Route Note:* Inka packet kal ke delivery route me pack karna hai.`;
+                    sendOwnerAlert(ownerResumeMsg).catch(err => console.error("Error sending owner resume alert:", err));
+
+                    if (customerPhone) {
+                        const customerResumeMsg =
+                            `🥛 *Milkman Dairy Update*\n\n` +
+                            `Hi ${customerName}, aapki kal (*${tomorrowStr}*) ki milk delivery successfully *RESUME* ho chuki hai!\n\n` +
+                            `Subah fresh farm milk aapke doorstep par deliver ho jayega. Pure & Healthy! 🥛`;
+                        sendWhatsAppNotification(customerPhone, customerResumeMsg).catch(err => console.error("Error sending customer resume confirmation:", err));
+                    }
+                }
+            }
+        } catch (notifErr) {
+            console.error("Failed to dispatch WhatsApp pause/resume notification:", notifErr);
+        }
+
         res.json({
             success: true,
             nextDayPaused: shouldPause,
@@ -1446,6 +1530,388 @@ function getLocalIpAddresses() {
     }
     return ips;
 }
+
+
+// ==============================================
+// YOUPI-PG PAYMENT NOTIFICATIONS & TRANSACTIONS
+// ==============================================
+app.post("/api/youpi/notify", async (req, res) => {
+    try {
+        const { status, amount, txnId, utr, customerPhone, customerName } = req.body;
+        const formattedAmt = parseFloat(amount || 0).toFixed(2);
+        const name = customerName || "Valued Customer";
+        const timeStr = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+        // Save transaction to SQLite / Turso database
+        const recordId = 'UPI_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        try {
+            await db.execute({
+                sql: `INSERT INTO upi_transactions (id, customerName, customerPhone, amount, txnId, utr, vpa, status, createdAt)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [
+                    recordId,
+                    name,
+                    customerPhone || '',
+                    parseFloat(formattedAmt),
+                    txnId || 'N/A',
+                    utr || '',
+                    'vir523452@okhdfcbank',
+                    status || 'UNKNOWN',
+                    timeStr
+                ]
+            });
+        } catch (dbErr) {
+            console.error("Error inserting upi_transactions record:", dbErr);
+        }
+
+        if (status === "SUCCESS") {
+            // 1. WhatsApp confirmation to customer if phone available
+            if (customerPhone) {
+                const customerMsg =
+                    `🎉 *Milkman Dairy: Payment Received!* 🥛
+
+` +
+                    `Namaste ${name},
+` +
+                    `Aapka ₹${formattedAmt} ka UPI payment successfully verify ho gaya hai!
+
+` +
+                    `💳 *Txn ID:* #${txnId || 'N/A'}
+` +
+                    `🔢 *UTR / Ref No:* ${utr || 'Direct UPI'}
+` +
+                    `🏦 *Paid To:* vir523452@okhdfcbank
+` +
+                    `📅 *Date & Time:* ${timeStr}
+
+` +
+                    `Thank you for choosing 100% Pure Farm Fresh Milkman Dairy! 🌿`;
+
+                sendWhatsAppNotification(customerPhone, customerMsg).catch(err =>
+                    console.error("Error sending YouPI customer WhatsApp:", err)
+                );
+            }
+
+            // 2. WhatsApp alert to Owner (7696880795)
+            const ownerAlertMsg =
+                `💰 *Milkman Alert: New UPI Payment Verified!* 💳
+
+` +
+                `*Amount:* ₹${formattedAmt}
+` +
+                `*Customer:* ${name}
+` +
+                `*Phone:* ${customerPhone || 'Not provided'}
+` +
+                `*Txn ID:* #${txnId || 'N/A'}
+` +
+                `*UTR / Ref No:* ${utr || 'Direct UPI'}
+` +
+                `*UPI VPA:* vir523452@okhdfcbank
+` +
+                `*Time:* ${timeStr}`;
+
+            sendOwnerAlert(ownerAlertMsg).catch(err =>
+                console.error("Error sending YouPI owner WhatsApp:", err)
+            );
+
+            return res.json({ success: true, message: "Success notifications dispatched and recorded" });
+        } else if (status === "CANCELLED" || status === "EXPIRED") {
+            if (customerPhone) {
+                const cancelMsg =
+                    `⚠️ *Milkman Dairy: Payment ${status === 'EXPIRED' ? 'Expired' : 'Cancelled'}*
+
+` +
+                    `Namaste ${name},
+` +
+                    `Aapka ₹${formattedAmt} ka UPI payment complete nahi hua (${status === 'EXPIRED' ? 'Session Timeout' : 'Cancelled by user'}).
+
+` +
+                    `💳 *Txn ID:* #${txnId || 'N/A'}
+` +
+                    `📅 *Time:* ${timeStr}
+
+` +
+                    `Agar aap dobara pay karna chahte hain toh website par jaakar try kar sakte hain.
+` +
+                    `Help ke liye contact: 7696880795`;
+
+                sendWhatsAppNotification(customerPhone, cancelMsg).catch(err =>
+                    console.error("Error sending YouPI cancellation WhatsApp:", err)
+                );
+            }
+
+            return res.json({ success: true, message: "Cancel notification dispatched and recorded" });
+        }
+
+        res.json({ success: true });
+    } catch (e) {
+        console.error("YouPI notify error:", e);
+        res.status(500).json({ error: "Failed to process notification" });
+    }
+});
+
+app.get("/api/youpi/transactions", async (req, res) => {
+    try {
+        const result = await db.execute(`
+            SELECT id, customerName, customerPhone, amount, txnId, utr, vpa, status, createdAt
+            FROM upi_transactions
+            ORDER BY rowid DESC
+            LIMIT 10
+        `);
+        res.json({ success: true, transactions: result.rows || [] });
+    } catch (e) {
+        console.error("Error fetching upi_transactions:", e);
+        res.json({ success: true, transactions: [] });
+    }
+});
+
+
+// ==============================================
+// ZAPUPI PAYMENT GATEWAY INTEGRATION
+// ==============================================
+const ZAP_KEY = process.env.ZAP_KEY || "zapf29d648a94ef3ba979e02108efc4b0ac";
+
+// 1. Create ZapUPI Order
+app.post("/api/zapupi/create-order", async (req, res) => {
+    try {
+        const { amount, customerMobile, customerName, remark } = req.body;
+        const formattedAmt = parseFloat(amount || 1).toFixed(2);
+        const orderId = "MM" + Date.now().toString().slice(-6) + Math.floor(100 + Math.random() * 900);
+        const timeStr = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+        const zapPayload = {
+            zap_key: ZAP_KEY,
+            order_id: orderId,
+            amount: formattedAmt,
+            customer_mobile: customerMobile || "7696880795",
+            remark: (remark || 'MilkmanOrder').replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) || 'MilkmanOrder',
+            webhook_url: "https://milkmandairy.site/api/zapupi/webhook"
+        };
+
+        const response = await fetch("https://pay.zapupi.com/api/create-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "User-Agent": "Milkman-Dairy-App"
+            },
+            body: JSON.stringify(zapPayload)
+        });
+
+        const data = await response.json();
+
+        // Record initial PENDING order in upi_transactions
+        try {
+            await db.execute({
+                sql: `INSERT INTO upi_transactions (id, customerName, customerPhone, amount, txnId, utr, vpa, status, createdAt)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [
+                    "ZAP_" + orderId,
+                    customerName || "Customer",
+                    customerMobile || "",
+                    parseFloat(formattedAmt),
+                    orderId,
+                    "",
+                    "ZapUPI Cashier",
+                    "PENDING",
+                    timeStr
+                ]
+            });
+        } catch (dbErr) {
+            console.error("Error creating initial ZapUPI order record:", dbErr);
+        }
+
+        if (data.status === "success" || data.payment_url) {
+            let upiString = "";
+            let cashierVpa = "";
+            let exactPayAmount = formattedAmt;
+
+            if (data.payment_url) {
+                try {
+                    const pageRes = await fetch(data.payment_url, {
+                        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
+                    });
+                    const pageHtml = await pageRes.text();
+                    const serverDataMatch = pageHtml.match(/const serverData = ({[\s\S]*?});/);
+                    if (serverDataMatch) {
+                        const sd = JSON.parse(serverDataMatch[1]);
+                        const inp = sd.data || {};
+                        if (inp.upi_id) {
+                            cashierVpa = inp.upi_id;
+                            exactPayAmount = parseFloat(inp.pay_amount || formattedAmt).toFixed(2);
+                            const pn = encodeURIComponent(inp.companyName || "Milkman Dairy");
+                            const pa = encodeURIComponent(inp.upi_id);
+                            const am = encodeURIComponent(exactPayAmount);
+                            const tn = encodeURIComponent(inp.txnId || orderId);
+                            const extraKey = inp.autoCode ? `&${encodeURIComponent(inp.autoCode)}=${encodeURIComponent(inp.txnRef || '')}` : '';
+                            upiString = `upi://pay?pa=${pa}&pn=${pn}&cu=INR&am=${am}&tn=${tn}${extraKey}`;
+                        }
+                    }
+                } catch (parseErr) {
+                    console.error("Error extracting direct UPI from ZapUPI checkout page:", parseErr.message);
+                }
+            }
+
+            if (!upiString) {
+                cashierVpa = "vir523452@okhdfcbank";
+                upiString = `upi://pay?pa=vir523452@okhdfcbank&pn=Milkman%20Dairy&am=${formattedAmt}&cu=INR&tn=${orderId}`;
+            }
+
+            return res.json({
+                success: true,
+                orderId: orderId,
+                paymentUrl: data.payment_url,
+                upiString: upiString,
+                vpa: cashierVpa,
+                payAmount: exactPayAmount,
+                zapData: data
+            });
+        } else {
+            return res.json({
+                success: false,
+                message: data.message || "Failed to create ZapUPI order",
+                orderId: orderId,
+                zapData: data
+            });
+        }
+    } catch (e) {
+        console.error("ZapUPI create-order error:", e);
+        res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+});
+
+// 2. Check ZapUPI Order Status (Polling fallback)
+app.post("/api/zapupi/check-status", async (req, res) => {
+    try {
+        const { orderId, customerPhone, customerName } = req.body;
+        if (!orderId) return res.status(400).json({ error: "Missing orderId" });
+
+        const response = await fetch("https://pay.zapupi.com/api/order-status", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "User-Agent": "Milkman-Dairy-App"
+            },
+            body: JSON.stringify({
+                zap_key: ZAP_KEY,
+                order_id: orderId
+            })
+        });
+
+        const data = await response.json();
+        const timeStr = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+        // ZapUPI nests transaction details inside data.data
+        const txData = (data && data.data) ? data.data : (data || {});
+        const txStatus = String(txData.status || data.status || "").toUpperCase();
+        const isSuccess = txStatus === "SUCCESS" || txStatus === "COMPLETED";
+
+        if (isSuccess) {
+            const utr = txData.utr || txData.txn_id || "ZAP_AUTO";
+            const amt = parseFloat(txData.pay_amount || txData.amount || 0).toFixed(2);
+            const name = customerName || "Valued Customer";
+
+            try {
+                await db.execute({
+                    sql: `UPDATE upi_transactions SET status = 'SUCCESS', utr = ? WHERE txnId = ?`,
+                    args: [utr, orderId]
+                });
+            } catch (dbErr) {
+                console.error("Error updating upi_transactions for success:", dbErr);
+            }
+
+            if (customerPhone) {
+                const customerMsg =
+                    `🎉 *Milkman Dairy: Payment Received via ZapUPI!* 🥛\n\n` +
+                    `Namaste ${name},\n` +
+                    `Aapka ₹${amt} ka payment successfully verify ho gaya hai!\n\n` +
+                    `💳 *Order ID:* #${orderId}\n` +
+                    `🔢 *Bank UTR:* ${utr}\n` +
+                    `📅 *Date & Time:* ${timeStr}\n\n` +
+                    `Thank you for choosing 100% Pure Farm Fresh Milkman Dairy! 🌿`;
+
+                sendWhatsAppNotification(customerPhone, customerMsg).catch(err =>
+                    console.error("Error sending ZapUPI WhatsApp to customer:", err)
+                );
+            }
+
+            const ownerAlertMsg =
+                `💰 *Milkman Alert: New ZapUPI Payment Received!* 💳\n\n` +
+                `*Amount:* ₹${amt}\n` +
+                `*Customer:* ${name}\n` +
+                `*Phone:* ${customerPhone || 'N/A'}\n` +
+                `*Order ID:* #${orderId}\n` +
+                `*UTR:* ${utr}\n` +
+                `*Time:* ${timeStr}`;
+
+            sendOwnerAlert(ownerAlertMsg).catch(err =>
+                console.error("Error sending ZapUPI WhatsApp to owner:", err)
+            );
+
+            return res.json({ success: true, status: "SUCCESS", utr: utr, amount: amt, data: txData });
+        }
+
+        res.json({ success: true, status: txData.status || "PENDING", data: txData });
+    } catch (e) {
+        console.error("ZapUPI check-status error:", e);
+        res.status(500).json({ error: "Failed to check status" });
+    }
+});
+
+// 3. ZapUPI Webhook Receiver (Live Callback from 72.61.225.127)
+app.post("/api/zapupi/webhook", async (req, res) => {
+    try {
+        console.log("⚡ ZapUPI Webhook Received:", req.body);
+        const { order_id, txn_id, status, amount, pay_amount, utr, customer_mobile } = req.body;
+        const timeStr = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+        const formattedAmt = parseFloat(pay_amount || amount || 0).toFixed(2);
+        const finalUtr = utr || txn_id || "ZAP_AUTO";
+
+        const isSuccess = (status === "Success" || status === "SUCCESS" || status === "COMPLETED");
+
+        if (isSuccess && order_id) {
+            try {
+                await db.execute({
+                    sql: `UPDATE upi_transactions SET status = 'SUCCESS', utr = ? WHERE txnId = ?`,
+                    args: [finalUtr, order_id]
+                });
+            } catch (dbErr) {
+                console.error("Webhook DB update error:", dbErr);
+            }
+
+            if (customer_mobile) {
+                const customerMsg =
+                    `🎉 *Milkman Dairy: Payment Received via ZapUPI!* 🥛\n\n` +
+                    `Aapka ₹${formattedAmt} ka payment successfully verify ho gaya hai!\n\n` +
+                    `💳 *Order ID:* #${order_id}\n` +
+                    `🔢 *Bank UTR:* ${finalUtr}\n` +
+                    `📅 *Date & Time:* ${timeStr}\n\n` +
+                    `Thank you for choosing 100% Pure Farm Fresh Milkman Dairy! 🌿`;
+
+                sendWhatsAppNotification(customer_mobile, customerMsg).catch(err =>
+                    console.error("Error sending ZapUPI webhook customer WhatsApp:", err)
+                );
+            }
+
+            const ownerAlertMsg =
+                `💰 *Milkman Alert: ZapUPI Webhook Payment Verified!* 💳\n\n` +
+                `*Amount:* ₹${formattedAmt}\n` +
+                `*Phone:* ${customer_mobile || 'N/A'}\n` +
+                `*Order ID:* #${order_id}\n` +
+                `*UTR:* ${finalUtr}\n` +
+                `*Time:* ${timeStr}`;
+
+            sendOwnerAlert(ownerAlertMsg).catch(err =>
+                console.error("Error sending ZapUPI webhook owner WhatsApp:", err)
+            );
+        }
+
+        res.status(200).json({ status: "success", message: "Webhook processed successfully" });
+    } catch (e) {
+        console.error("ZapUPI webhook processing error:", e);
+        res.status(200).json({ status: "error", message: "Error processed" });
+    }
+});
 
 const PORT = 8080;
 app.listen(PORT, '0.0.0.0', () => {

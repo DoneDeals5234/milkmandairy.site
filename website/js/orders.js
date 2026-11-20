@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Payment Mode (Matching Reference Image 1) -->
             <div class="delivery-field-group" style="margin-top: 18px;">
                 <label>Payment Mode</label>
-                <input type="text" class="delivery-input-field readonly-field" value="Cash On Delivery (COD)" readonly>
+                <input type="text" class="delivery-input-field readonly-field" value="${cart.some(i => i.productId && (i.productId.startsWith('plan_') || i.productId.startsWith('custom_'))) ? '⚡ Pay Later (Pay within 24 Hours)' : 'Cash On Delivery (COD)'}" readonly>
             </div>
 
             <p class="delivery-location-notice">
@@ -570,7 +570,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     landmark,
                     latitude: lat,
                     longitude: lng,
-                    orderType: 'INSTANT_BUY'
+                    orderType: cart.some(i => i.productId && (i.productId.startsWith('plan_') || i.productId.startsWith('custom_'))) ? 'SUBSCRIPTION_PLAN' : 'INSTANT_BUY',
+                    paymentStatus: cart.some(i => i.productId && (i.productId.startsWith('plan_') || i.productId.startsWith('custom_'))) ? 'PAY_LATER' : 'PENDING_AT_DOORSTEP'
                 })
             });
             const data = await res.json();

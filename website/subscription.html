@@ -1495,6 +1495,179 @@
             padding: 20px;
             margin-bottom: 20px;
         }
+    
+        /* Pay Later (24 Hours Window) Card Styles */
+        .pay-later-card {
+            background: linear-gradient(135deg, rgba(38, 22, 15, 0.95), rgba(58, 30, 16, 0.92));
+            border: 2px solid rgba(245, 158, 11, 0.6);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 25px rgba(245, 158, 11, 0.2);
+            padding: 22px 24px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .pay-later-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(245, 158, 11, 0.18);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            color: #fbbf24;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+
+        .pay-later-pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b;
+            animation: pulseDot 1.5s infinite;
+        }
+
+        @keyframes pulseDot {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.4); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .pay-later-main-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .pay-later-details {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .pay-later-title {
+            font-size: 1.28rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 0 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pay-later-desc {
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            margin: 0 0 14px;
+        }
+
+        .pay-later-countdown-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fef08a;
+        }
+
+        .pay-later-action-box {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            min-width: 220px;
+        }
+
+        .pay-later-price-tag {
+            text-align: right;
+        }
+
+        .pay-later-amount-label {
+            display: block;
+            font-size: 0.74rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .pay-later-amount-val {
+            font-size: 1.85rem;
+            font-weight: 900;
+            color: #10b981;
+            letter-spacing: -0.5px;
+        }
+
+        .btn-pay-later-upi {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+            transition: all 0.25s ease;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-pay-later-upi:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .btn-pay-later-whatsapp {
+            background: rgba(37, 211, 102, 0.12);
+            border: 1px solid rgba(37, 211, 102, 0.35);
+            color: #4ade80;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-pay-later-whatsapp:hover {
+            background: rgba(37, 211, 102, 0.22);
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .pay-later-action-box {
+                align-items: stretch;
+                width: 100%;
+            }
+            .pay-later-price-tag {
+                text-align: left;
+                display: flex;
+                align-items: baseline;
+                gap: 10px;
+            }
+        }
+
     </style>
     <!-- Milkman Animated Loader Component -->
     <script src="js/loader.js"></script>
@@ -1735,6 +1908,44 @@
                 </div>
                 <div class="sub-progress-track">
                     <div class="sub-progress-bar" id="subProgressBar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            
+            <!-- PAY LATER (24 HOURS) CARD (Single Sub View) -->
+            <div class="glass-sub-card pay-later-card" id="payLaterCard" style="display: none;">
+                <div class="pay-later-badge-tag">
+                    <span class="pay-later-pulse-dot"></span>
+                    <span>⚡ Pay Later (Pay within 24 Hours)</span>
+                </div>
+                
+                <div class="pay-later-main-content">
+                    <div class="pay-later-details">
+                        <h3 class="pay-later-title">
+                            <span>⏳</span> Complete Payment Within 24 Hours
+                        </h3>
+                        <p class="pay-later-desc">
+                            Aapki milk subscription active hai! Uninterrupted daily doorstep delivery ke liye kripya agle 24 ghante ke andar payment complete karein.
+                        </p>
+                        <div class="pay-later-countdown-badge">
+                            <span class="countdown-clock">🕒</span>
+                            <span id="payLaterCountdownText">Time Remaining: 24h 00m</span>
+                        </div>
+                    </div>
+
+                    <div class="pay-later-action-box">
+                        <div class="pay-later-price-tag">
+                            <span class="pay-later-amount-label">Pay Later Due</span>
+                            <span class="pay-later-amount-val" id="payLaterAmountVal">₹0</span>
+                        </div>
+                        <button type="button" class="btn-pay-later-upi" id="btnPayLaterUpi" onclick="window.initiatePayLaterUPI ? window.initiatePayLaterUPI() : null">
+                            <span>💳</span> Pay Now via UPI
+                        </button>
+                        <a id="payLaterWhatsappBtn" href="https://wa.me/917696880795?text=Hi%2C%20I%20want%20to%20send%20my%20payment%20confirmation%20for%20my%20Milkman%20Subscription." 
+                           target="_blank" rel="noopener noreferrer" class="btn-pay-later-whatsapp">
+                            <span>💬</span> WhatsApp Payment Help
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -2304,6 +2515,48 @@
             }, 3000);
         };
 
+        
+        function get24HourCountdownString(createdAt) {
+            try {
+                const createdMs = createdAt ? (typeof createdAt === 'number' ? createdAt : new Date(createdAt).getTime()) : Date.now();
+                const deadlineMs = createdMs + (24 * 60 * 60 * 1000);
+                const diffMs = deadlineMs - Date.now();
+                if (diffMs <= 0) {
+                    return '<span style="color: #f87171;">⚠️ 24-Hour Window Expired - Please Pay Today</span>';
+                }
+                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                return `Time Remaining: ${hrs} hrs ${mins} mins`;
+            } catch (e) {
+                return 'Within 24 Hours';
+            }
+        }
+
+        window.initiatePayLaterUPI = function (amount, subId) {
+            const amt = amount || (activeSubscription ? activeSubscription.totalAmount : 0) || 1699;
+            const sid = subId || (activeSubscription ? activeSubscription.id : '') || 'Plan';
+            const modal = document.getElementById('upiPaymentModal');
+            const amtEl = document.getElementById('modalUpiAmount');
+            const gpayBtn = document.getElementById('modalGpayBtn');
+            const waBtn = document.getElementById('modalWhatsappConfirmBtn');
+
+            if (amtEl) amtEl.innerText = `₹${amt}`;
+            if (gpayBtn) {
+                gpayBtn.href = `upi://pay?pa=7696880795@okaxis&pn=Milkman%20Dairy&am=${amt}&cu=INR&tn=Milkman%20Subscription%20${encodeURIComponent(sid)}`;
+            }
+            if (waBtn) {
+                const waText = encodeURIComponent(`Hi Milkman Dairy, I am submitting payment confirmation for my subscription #${sid} (Amount: ₹${amt}).`);
+                waBtn.href = `https://wa.me/917696880795?text=${waText}`;
+            }
+
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                modal.style.opacity = '1';
+                modal.style.pointerEvents = 'auto';
+            }
+        };
+    
         function renderSubscriptionView(sub) {
             // Header Info & Image
             if (document.getElementById('subPlanTitle')) subPlanTitle.innerText = sub.planName || 'Daily Milk Plan';
@@ -2866,6 +3119,42 @@
         // Initialize on DOM load
         document.addEventListener('DOMContentLoaded', initSubscriptionPage);
     </script>
+
+    <!-- UPI PAYMENT MODAL FOR PAY LATER -->
+    <div id="upiPaymentModal" class="modal-overlay" style="z-index: 1000000;">
+        <div class="modal-content" style="max-width: 420px; text-align: center; border: 2px solid var(--sub-amber-gold); background: #1a0f0a; color: #fff;">
+            <span class="close-modal" id="closeUpiModal" style="color: #cbd5e1;" onclick="document.getElementById('upiPaymentModal').classList.remove('active'); document.getElementById('upiPaymentModal').style.display='none';">&times;</span>
+            <div style="font-size: 2.2rem; margin-bottom: 8px;">💳</div>
+            <h3 style="font-size: 1.4rem; color: #f59e0b; margin: 0 0 6px;">Pay Later • UPI Payment</h3>
+            <p style="color: #94a3b8; font-size: 0.88rem; margin: 0 0 16px;">
+                Scan QR code or click your preferred UPI app to pay.
+            </p>
+            
+            <div style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(245,158,11,0.4); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+                <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Total Due Amount</div>
+                <div style="font-size: 2rem; font-weight: 900; color: #10b981; margin: 4px 0;" id="modalUpiAmount">₹1,699</div>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px;">
+                    <span style="font-size: 0.85rem; color: #cbd5e1; font-family: monospace;" id="modalUpiIdText">7696880795@paytm</span>
+                    <button type="button" onclick="navigator.clipboard.writeText('7696880795@paytm'); alert('UPI ID Copied: 7696880795@paytm');" 
+                            style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #f59e0b; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 700;">Copy</button>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                <a id="modalGpayBtn" href="#" class="btn-pay-later-upi" style="text-decoration: none; justify-content: center;">
+                    <span>⚡</span> Pay via Any UPI App (GPay / PhonePe)
+                </a>
+                <a id="modalWhatsappConfirmBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn-pay-later-whatsapp" style="justify-content: center; padding: 11px 16px;">
+                    <span>💬</span> Confirm on WhatsApp (7696880795)
+                </a>
+            </div>
+
+            <small style="color: #64748b; font-size: 0.75rem;">
+                Payment verification usually takes 5-10 minutes. Your daily delivery stays active!
+            </small>
+        </div>
+    </div>
+
 </body>
 
 </html>
